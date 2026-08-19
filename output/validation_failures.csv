@@ -1,0 +1,3 @@
+rule_id,severity,table,company_id,year,message
+DQ-13,WARNING,profitandloss,1,,Company has only 1 years of data
+DQ-13,WARNING,profitandloss,2,,Company has only 1 years of data

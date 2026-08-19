@@ -1,0 +1,13 @@
+table_name,expected_rows,actual_rows,difference,status
+analysis,20,20,0,PASS
+balancesheet,1312,1312,0,PASS
+cashflow,1187,1187,0,PASS
+companies,92,92,0,PASS
+documents,1585,1585,0,PASS
+financial_ratios,1184,1184,0,PASS
+market_cap,552,552,0,PASS
+peer_groups,56,56,0,PASS
+profitandloss,1276,1276,0,PASS
+prosandcons,16,16,0,PASS
+sectors,92,92,0,PASS
+stock_prices,5520,5520,0,PASS

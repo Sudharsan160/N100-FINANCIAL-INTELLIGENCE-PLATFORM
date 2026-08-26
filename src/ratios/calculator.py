@@ -26,8 +26,22 @@ from src.ratios.formulas import (
     pretax_margin,
     revenue_growth,
     return_on_assets,
+    return_on_capital_employed,
     return_on_equity,
 )
+
+
+BANK_COMPANIES = {
+    "AXISBANK",
+    "BANKBARODA",
+    "CANBK",
+    "HDFCBANK",
+    "ICICIBANK",
+    "INDUSINDBK",
+    "KOTAKBANK",
+    "PNB",
+    "SBIN",
+}
 
 
 def _is_zero_record(record: dict[str, Any]) -> bool:
@@ -106,11 +120,14 @@ def calculate_ratio_row(
     previous_profit_loss: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """
-    Calculate the Day 08 + Day 09 + Day 11 ratio set.
+    Calculate the Day 08 + Day 09 + Day 11 + Day 13 ratio set.
 
     Growth metrics use the previous available P&L record
     for the same company.
     """
+    company_id = profit_loss["company_id"]
+    is_bank = company_id in BANK_COMPANIES
+
     sales = profit_loss.get("sales")
     operating_profit = profit_loss.get("operating_profit")
     net_profit = profit_loss.get("net_profit")
@@ -183,7 +200,7 @@ def calculate_ratio_row(
 
     return {
         # Day 08 — Core ratios
-        "company_id": profit_loss["company_id"],
+        "company_id": company_id,
         "year": int(profit_loss["year"]),
         "net_profit_margin_pct": net_profit_margin(
             net_profit,
@@ -293,6 +310,14 @@ def calculate_ratio_row(
         "capital_expenditure_intensity_pct": capital_expenditure_intensity(
             capex,
             sales,
+        ),
+
+        # Day 13 — ROCE with bank carve-out
+        "roce_pct": return_on_capital_employed(
+            operating_profit,
+            equity,
+            borrowings,
+            is_bank,
         ),
     }
 

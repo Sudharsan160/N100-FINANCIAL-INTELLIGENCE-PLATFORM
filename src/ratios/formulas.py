@@ -242,3 +242,34 @@ def capital_expenditure_intensity(
         return None
 
     return percentage(abs(float(capital_expenditure)), sales)
+
+def return_on_capital_employed(
+    operating_profit: Number,
+    equity: Number,
+    total_debt: Number,
+    is_bank: bool = False,
+) -> Optional[float]:
+    """
+    Calculate ROCE for non-bank companies.
+
+    Banks are explicitly excluded because operating profit is not
+    comparable to an EBIT-style operating profit for this business model.
+    """
+    if is_bank:
+        return None
+
+    if operating_profit is None:
+        return None
+
+    if equity is None and total_debt is None:
+        return None
+
+    capital_employed = float(equity or 0) + float(total_debt or 0)
+
+    if capital_employed == 0:
+        return None
+
+    return percentage(
+        operating_profit,
+        capital_employed,
+    )

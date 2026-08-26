@@ -48,7 +48,10 @@ RATIO_COLUMNS = [
     "investing_cash_flow_to_cfo",
     "financing_cash_flow_to_cfo",
     "cash_conversion_ratio",
-    "capital_expenditure_intensity_pct",
+     "capital_expenditure_intensity_pct",
+
+    # Day 13 — Bank ROCE Carve-Out
+    "roce_pct",
 ]
 
 

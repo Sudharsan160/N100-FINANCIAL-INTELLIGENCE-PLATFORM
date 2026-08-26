@@ -22,6 +22,7 @@ from src.ratios.formulas import (
     pretax_margin,
     revenue_growth,
     return_on_assets,
+    return_on_capital_employed,
     return_on_equity,
     safe_divide,
 )
@@ -211,3 +212,51 @@ def test_cfo_to_zero_debt():
 
 def test_investing_cash_flow_zero_cfo():
     assert investing_cash_flow_to_cfo(-100, 0) is None
+
+
+# Day 13 — Bank ROCE Carve-Out
+
+
+def test_roce_non_bank():
+    assert return_on_capital_employed(
+        200,
+        500,
+        500,
+        False,
+    ) == 20.0
+
+
+def test_roce_bank_returns_none():
+    assert return_on_capital_employed(
+        200,
+        500,
+        500,
+        True,
+    ) is None
+
+
+def test_roce_zero_capital_employed():
+    assert return_on_capital_employed(
+        200,
+        0,
+        0,
+        False,
+    ) is None
+
+
+def test_roce_missing_operating_profit():
+    assert return_on_capital_employed(
+        None,
+        500,
+        500,
+        False,
+    ) is None
+
+
+def test_roce_negative_capital_employed():
+    assert return_on_capital_employed(
+        100,
+        -700,
+        200,
+        False,
+    ) == -20.0

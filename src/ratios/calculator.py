@@ -4,14 +4,24 @@ from typing import Any
 
 from src.ratios.formulas import (
     asset_turnover,
+    cash_flow_to_net_profit,
+    debt_ratio,
     debt_to_equity,
+    eps_growth,
+    equity_ratio,
+    financial_leverage,
     free_cash_flow,
     interest_coverage,
+    net_profit_growth,
     net_profit_margin,
+    operating_cash_flow_margin,
+    operating_profit_growth,
     operating_profit_margin,
+    pretax_margin,
+    revenue_growth,
+    return_on_assets,
     return_on_equity,
 )
-
 
 def _is_zero_record(record: dict[str, Any]) -> bool:
     """
@@ -91,13 +101,18 @@ def calculate_ratio_row(
     profit_loss: dict[str, Any],
     balance_sheet: dict[str, Any],
     cash_flow: dict[str, Any] | None = None,
+    previous_profit_loss: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """
-    Calculate the Day 08 ratio set from canonical company/year records.
+    Calculate the Day 08 + Day 09 ratio set.
+
+    Growth metrics use the previous available P&L record
+    for the same company.
     """
     sales = profit_loss.get("sales")
     operating_profit = profit_loss.get("operating_profit")
     net_profit = profit_loss.get("net_profit")
+    profit_before_tax = profit_loss.get("profit_before_tax")
     interest = profit_loss.get("interest")
     eps = profit_loss.get("eps")
     dividend_payout = profit_loss.get("dividend_payout")
@@ -148,7 +163,21 @@ def calculate_ratio_row(
             shares_outstanding,
         )
 
+    previous_sales = None
+    previous_operating_profit = None
+    previous_net_profit = None
+    previous_eps = None
+
+    if previous_profit_loss is not None:
+        previous_sales = previous_profit_loss.get("sales")
+        previous_operating_profit = previous_profit_loss.get(
+            "operating_profit"
+        )
+        previous_net_profit = previous_profit_loss.get("net_profit")
+        previous_eps = previous_profit_loss.get("eps")
+
     return {
+        # Existing Day 08 metrics
         "company_id": profit_loss["company_id"],
         "year": int(profit_loss["year"]),
         "net_profit_margin_pct": net_profit_margin(
@@ -182,6 +211,58 @@ def calculate_ratio_row(
         "dividend_payout_ratio_pct": dividend_payout,
         "total_debt_cr": borrowings,
         "cash_from_operations_cr": cash_from_operations,
+
+        # Day 09 profitability
+        "return_on_assets_pct": return_on_assets(
+            net_profit,
+            total_assets,
+        ),
+        "pretax_margin_pct": pretax_margin(
+            profit_before_tax,
+            sales,
+        ),
+
+        # Day 09 cash-flow
+        "operating_cash_flow_margin_pct": operating_cash_flow_margin(
+            cash_from_operations,
+            sales,
+        ),
+        "cash_flow_to_net_profit": cash_flow_to_net_profit(
+            cash_from_operations,
+            net_profit,
+        ),
+
+        # Day 09 leverage
+        "debt_ratio": debt_ratio(
+            borrowings,
+            total_assets,
+        ),
+        "equity_ratio": equity_ratio(
+            equity,
+            total_assets,
+        ),
+        "financial_leverage": financial_leverage(
+            total_assets,
+            equity,
+        ),
+
+        # Day 09 growth
+        "revenue_growth_pct": revenue_growth(
+            sales,
+            previous_sales,
+        ),
+        "operating_profit_growth_pct": operating_profit_growth(
+            operating_profit,
+            previous_operating_profit,
+        ),
+        "net_profit_growth_pct": net_profit_growth(
+            net_profit,
+            previous_net_profit,
+        ),
+        "eps_growth_pct": eps_growth(
+            eps,
+            previous_eps,
+        ),
     }
 
 def safe_share_count(

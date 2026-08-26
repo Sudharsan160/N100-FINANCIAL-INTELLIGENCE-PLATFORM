@@ -61,3 +61,69 @@ def test_negative_profit():
 
 def test_zero_sales():
     assert net_profit_margin(100, 0) is None
+
+from src.ratios.formulas import (
+    cash_flow_to_net_profit,
+    debt_ratio,
+    eps_growth,
+    equity_ratio,
+    financial_leverage,
+    net_profit_growth,
+    operating_cash_flow_margin,
+    operating_profit_growth,
+    pretax_margin,
+    revenue_growth,
+    return_on_assets,
+)
+
+
+def test_return_on_assets():
+    assert return_on_assets(100, 1000) == 10.0
+
+
+def test_pretax_margin():
+    assert pretax_margin(150, 1000) == 15.0
+
+
+def test_operating_cash_flow_margin():
+    assert operating_cash_flow_margin(200, 1000) == 20.0
+
+
+def test_cash_flow_to_net_profit():
+    assert cash_flow_to_net_profit(200, 100) == 2.0
+
+
+def test_debt_ratio():
+    assert debt_ratio(200, 1000) == 0.2
+
+
+def test_equity_ratio():
+    assert equity_ratio(500, 1000) == 0.5
+
+
+def test_financial_leverage():
+    assert financial_leverage(1000, 500) == 2.0
+
+
+def test_revenue_growth():
+    assert revenue_growth(1200, 1000) == 20.0
+
+
+def test_operating_profit_growth():
+    assert operating_profit_growth(240, 200) == 20.0
+
+
+def test_net_profit_growth():
+    assert net_profit_growth(120, 100) == 20.0
+
+
+def test_eps_growth():
+    assert eps_growth(12, 10) == 20.0
+
+
+def test_growth_zero_previous():
+    assert revenue_growth(100, 0) is None
+
+
+def test_growth_missing_previous():
+    assert net_profit_growth(100, None) is None

@@ -13,6 +13,8 @@ DB_PATH = Path("nifty100.db")
 RATIO_COLUMNS = [
     "company_id",
     "year",
+
+    # Day 08
     "net_profit_margin_pct",
     "operating_profit_margin_pct",
     "return_on_equity_pct",
@@ -26,8 +28,20 @@ RATIO_COLUMNS = [
     "dividend_payout_ratio_pct",
     "total_debt_cr",
     "cash_from_operations_cr",
-]
 
+    # Day 09
+    "return_on_assets_pct",
+    "pretax_margin_pct",
+    "operating_cash_flow_margin_pct",
+    "cash_flow_to_net_profit",
+    "debt_ratio",
+    "equity_ratio",
+    "financial_leverage",
+    "revenue_growth_pct",
+    "operating_profit_growth_pct",
+    "net_profit_growth_pct",
+    "eps_growth_pct",
+]
 
 def fetch_grouped_records(
     conn: sqlite3.Connection,
@@ -166,6 +180,12 @@ def build_ratio_rows(
             if key[0] == company_id
         )
 
+        pnl_company_keys = sorted(
+            key
+            for key in pnl_groups
+            if key[0] == company_id
+        )
+
         for key in company_keys:
             profit_loss = pnl_groups.get(key)
             balance_sheet = bs_groups.get(key)
@@ -180,6 +200,7 @@ def build_ratio_rows(
                     "year": key[1],
                     "sales": None,
                     "operating_profit": None,
+                    "profit_before_tax": None,
                     "net_profit": None,
                     "interest": None,
                     "eps": None,
@@ -198,11 +219,25 @@ def build_ratio_rows(
 
             profit_loss["face_value"] = companies[company_id]
 
+            previous_profit_loss = None
+
+            if key in pnl_company_keys:
+                current_position = pnl_company_keys.index(key)
+
+                if current_position > 0:
+                    previous_key = pnl_company_keys[
+                        current_position - 1
+                    ]
+                    previous_profit_loss = pnl_groups.get(
+                        previous_key
+                    )
+
             ratio_rows.append(
                 calculate_ratio_row(
                     profit_loss,
                     balance_sheet,
                     cash_flow,
+                    previous_profit_loss,
                 )
             )
 

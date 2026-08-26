@@ -38,15 +38,26 @@ def growth_percentage(
     previous: Number,
 ) -> Optional[float]:
     """
-    Year-over-year growth percentage.
+    Calculate year-over-year growth percentage.
 
-    Returns None when the previous value is missing or zero.
+    Policy:
+    - Missing current/previous value -> None
+    - Previous value <= 0 -> None
+    - Otherwise: (current - previous) / previous * 100
+
+    This avoids misleading percentages for zero or negative
+    prior-period values, including negative-to-positive turnarounds.
     """
-    return percentage(
-        None if current is None or previous is None else float(current) - float(previous),
-        previous,
-    )
+    if current is None or previous is None:
+        return None
 
+    if float(previous) <= 0:
+        return None
+
+    return (
+        (float(current) - float(previous))
+        / float(previous)
+    ) * 100.0
 
 def net_profit_margin(
     net_profit: Number,

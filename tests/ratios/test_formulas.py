@@ -127,3 +127,57 @@ def test_growth_zero_previous():
 
 def test_growth_missing_previous():
     assert net_profit_growth(100, None) is None
+
+def test_growth_negative_previous_returns_none():
+    assert revenue_growth(100, -50) is None
+
+
+def test_growth_turnaround_returns_none():
+    assert net_profit_growth(100, -50) is None
+
+
+def test_growth_positive_to_positive():
+    assert revenue_growth(150, 100) == 50.0
+
+
+def test_growth_negative_to_negative_returns_none():
+    assert net_profit_growth(-50, -100) is None
+
+
+def test_growth_zero_previous_returns_none():
+    assert revenue_growth(100, 0) is None
+def test_zero_interest_returns_none():
+    assert interest_coverage(200, 0) is None
+
+
+def test_zero_sales_returns_none():
+    assert net_profit_margin(100, 0) is None
+
+
+def test_zero_debt_returns_zero():
+    assert debt_to_equity(0, 500) == 0.0
+
+
+def test_negative_profit_margin():
+    assert net_profit_margin(-100, 1000) == -10.0
+
+
+def test_negative_eps_growth_from_positive_previous():
+    assert eps_growth(-5, 10) == -150.0
+
+
+def test_negative_eps_previous_returns_none():
+    assert eps_growth(10, -5) is None
+
+
+def test_zero_operating_cash_flow():
+    assert free_cash_flow(0, 100) == -100.0
+
+
+def test_negative_operating_cash_flow():
+    assert free_cash_flow(-500, 100) == -600.0
+
+
+def test_negative_equity():
+    assert return_on_equity(100, -500) == -20.0
+    assert debt_to_equity(200, -500) == -0.4

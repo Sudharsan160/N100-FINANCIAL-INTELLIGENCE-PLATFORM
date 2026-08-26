@@ -192,3 +192,53 @@ def eps_growth(
     previous_eps: Number,
 ) -> Optional[float]:
     return growth_percentage(current_eps, previous_eps)
+
+def cfo_to_total_debt(
+    operating_cash_flow: Number,
+    total_debt: Number,
+) -> Optional[float]:
+    """Operating cash flow / total debt."""
+    return safe_divide(operating_cash_flow, total_debt)
+
+
+def free_cash_flow_margin(
+    free_cash_flow_value: Number,
+    sales: Number,
+) -> Optional[float]:
+    """Free cash flow as a percentage of sales."""
+    return percentage(free_cash_flow_value, sales)
+
+
+def investing_cash_flow_to_cfo(
+    investing_cash_flow: Number,
+    operating_cash_flow: Number,
+) -> Optional[float]:
+    """Investing cash flow / operating cash flow."""
+    return safe_divide(investing_cash_flow, operating_cash_flow)
+
+
+def financing_cash_flow_to_cfo(
+    financing_cash_flow: Number,
+    operating_cash_flow: Number,
+) -> Optional[float]:
+    """Financing cash flow / operating cash flow."""
+    return safe_divide(financing_cash_flow, operating_cash_flow)
+
+
+def cash_conversion_ratio(
+    operating_cash_flow: Number,
+    operating_profit: Number,
+) -> Optional[float]:
+    """Operating cash flow / operating profit."""
+    return safe_divide(operating_cash_flow, operating_profit)
+
+
+def capital_expenditure_intensity(
+    capital_expenditure: Number,
+    sales: Number,
+) -> Optional[float]:
+    """Absolute capital expenditure as a percentage of sales."""
+    if capital_expenditure is None:
+        return None
+
+    return percentage(abs(float(capital_expenditure)), sales)

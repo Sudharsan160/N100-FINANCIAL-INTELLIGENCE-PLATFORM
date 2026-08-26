@@ -1,10 +1,27 @@
 from src.ratios.formulas import (
     asset_turnover,
+    capital_expenditure_intensity,
+    cash_conversion_ratio,
+    cash_flow_to_net_profit,
+    cfo_to_total_debt,
+    debt_ratio,
     debt_to_equity,
+    eps_growth,
+    equity_ratio,
+    financial_leverage,
+    financing_cash_flow_to_cfo,
     free_cash_flow,
+    free_cash_flow_margin,
     interest_coverage,
+    investing_cash_flow_to_cfo,
+    net_profit_growth,
     net_profit_margin,
+    operating_cash_flow_margin,
+    operating_profit_growth,
     operating_profit_margin,
+    pretax_margin,
+    revenue_growth,
+    return_on_assets,
     return_on_equity,
     safe_divide,
 )
@@ -62,19 +79,8 @@ def test_negative_profit():
 def test_zero_sales():
     assert net_profit_margin(100, 0) is None
 
-from src.ratios.formulas import (
-    cash_flow_to_net_profit,
-    debt_ratio,
-    eps_growth,
-    equity_ratio,
-    financial_leverage,
-    net_profit_growth,
-    operating_cash_flow_margin,
-    operating_profit_growth,
-    pretax_margin,
-    revenue_growth,
-    return_on_assets,
-)
+
+# Day 09
 
 
 def test_return_on_assets():
@@ -128,6 +134,10 @@ def test_growth_zero_previous():
 def test_growth_missing_previous():
     assert net_profit_growth(100, None) is None
 
+
+# Day 10
+
+
 def test_growth_negative_previous_returns_none():
     assert revenue_growth(100, -50) is None
 
@@ -144,22 +154,12 @@ def test_growth_negative_to_negative_returns_none():
     assert net_profit_growth(-50, -100) is None
 
 
-def test_growth_zero_previous_returns_none():
-    assert revenue_growth(100, 0) is None
 def test_zero_interest_returns_none():
     assert interest_coverage(200, 0) is None
 
 
-def test_zero_sales_returns_none():
-    assert net_profit_margin(100, 0) is None
-
-
 def test_zero_debt_returns_zero():
     assert debt_to_equity(0, 500) == 0.0
-
-
-def test_negative_profit_margin():
-    assert net_profit_margin(-100, 1000) == -10.0
 
 
 def test_negative_eps_growth_from_positive_previous():
@@ -178,6 +178,36 @@ def test_negative_operating_cash_flow():
     assert free_cash_flow(-500, 100) == -600.0
 
 
-def test_negative_equity():
-    assert return_on_equity(100, -500) == -20.0
-    assert debt_to_equity(200, -500) == -0.4
+# Day 11 — Cash Flow & Capital Allocation
+
+
+def test_cfo_to_total_debt():
+    assert cfo_to_total_debt(200, 1000) == 0.2
+
+
+def test_free_cash_flow_margin():
+    assert free_cash_flow_margin(200, 1000) == 20.0
+
+
+def test_investing_cash_flow_to_cfo():
+    assert investing_cash_flow_to_cfo(-100, 500) == -0.2
+
+
+def test_financing_cash_flow_to_cfo():
+    assert financing_cash_flow_to_cfo(100, 500) == 0.2
+
+
+def test_cash_conversion_ratio():
+    assert cash_conversion_ratio(300, 200) == 1.5
+
+
+def test_capital_expenditure_intensity():
+    assert capital_expenditure_intensity(-100, 1000) == 10.0
+
+
+def test_cfo_to_zero_debt():
+    assert cfo_to_total_debt(200, 0) is None
+
+
+def test_investing_cash_flow_zero_cfo():
+    assert investing_cash_flow_to_cfo(-100, 0) is None

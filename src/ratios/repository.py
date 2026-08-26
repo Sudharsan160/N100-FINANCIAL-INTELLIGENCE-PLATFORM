@@ -41,7 +41,16 @@ RATIO_COLUMNS = [
     "operating_profit_growth_pct",
     "net_profit_growth_pct",
     "eps_growth_pct",
+
+    # Day 11 — Cash Flow & Capital Allocation
+    "cfo_to_total_debt",
+    "free_cash_flow_margin_pct",
+    "investing_cash_flow_to_cfo",
+    "financing_cash_flow_to_cfo",
+    "cash_conversion_ratio",
+    "capital_expenditure_intensity_pct",
 ]
+
 
 def fetch_grouped_records(
     conn: sqlite3.Connection,
@@ -243,6 +252,7 @@ def build_ratio_rows(
 
     return ratio_rows
 
+
 def rebuild_financial_ratios(
     db_path: str | Path = DB_PATH,
 ) -> int:
@@ -263,7 +273,7 @@ def rebuild_financial_ratios(
 
         ratio_rows = build_ratio_rows(conn)
 
-        # Replace the old duplicated ratio dataset.
+        # Replace the old ratio dataset.
         conn.execute("DELETE FROM financial_ratios")
 
         for ratio in ratio_rows:
@@ -283,11 +293,7 @@ def rebuild_financial_ratios(
                 values,
             )
 
-        conn.execute("""
-            CREATE UNIQUE INDEX IF NOT EXISTS
-            ux_financial_ratios_company_year
-            ON financial_ratios(company_id, year)
-        """)
+        create_ratio_unique_index(conn)
 
         conn.commit()
 

@@ -1,0 +1,135 @@
+[ZERO_SALES]
+Count: 1
+Explanation: Sales is zero, so ratios using sales as denominator are undefined and stored as NULL.
+Examples:
+  - ADANIENSOL 2014
+
+[ZERO_INTEREST]
+Count: 31
+Explanation: Interest is zero, so Interest Coverage is undefined and stored as NULL.
+Examples:
+  - ABB 2012
+  - ABB 2014
+  - ABB 2015
+  - ADANIENSOL 2014
+  - BAJAJHLDNG 2013
+  - BAJAJHLDNG 2014
+  - BAJAJHLDNG 2015
+  - BAJAJHLDNG 2016
+  - BAJAJHLDNG 2017
+  - BAJAJHLDNG 2018
+
+[ZERO_DEBT]
+Count: 85
+Explanation: Debt is zero. Debt-to-equity can be 0 when equity exists, while CFO/debt is NULL.
+Examples:
+  - ABB 2012
+  - ABB 2014
+  - ABB 2015
+  - ABB 2016
+  - ABB 2017
+  - ABB 2018
+  - ABB 2019
+  - ADANIENSOL 2014
+  - BAJAJHLDNG 2013
+  - BAJAJHLDNG 2014
+
+[NEGATIVE_NET_PROFIT]
+Count: 77
+Explanation: Negative net profit represents a valid loss period and is preserved.
+Examples:
+  - ADANIENSOL 2015
+  - ADANIGREEN 2017
+  - ADANIGREEN 2018
+  - ADANIGREEN 2019
+  - ADANIGREEN 2020
+  - ADANIPOWER 2013
+  - ADANIPOWER 2014
+  - ADANIPOWER 2015
+  - ADANIPOWER 2017
+  - ADANIPOWER 2018
+
+[NEGATIVE_OPERATING_PROFIT]
+Count: 40
+Explanation: Negative operating profit represents an operating loss and is preserved.
+Examples:
+  - BHEL 2016
+  - BHEL 2020
+  - BHEL 2021
+  - LICI 2020
+  - LICI 2021
+  - NAUKRI 2017
+  - NAUKRI 2020
+  - SBIN 2013
+  - SBIN 2014
+  - SBIN 2015
+
+[NEGATIVE_EPS]
+Count: 68
+Explanation: Negative EPS is valid for loss periods; growth from a non-positive base is NULL.
+Examples:
+  - ADANIGREEN 2018
+  - ADANIGREEN 2019
+  - ADANIPOWER 2013
+  - ADANIPOWER 2014
+  - ADANIPOWER 2015
+  - ADANIPOWER 2017
+  - ADANIPOWER 2018
+  - ADANIPOWER 2019
+  - ADANIPOWER 2020
+  - BANKBARODA 2016
+
+[NEGATIVE_OPERATING_CASH_FLOW]
+Count: 173
+Explanation: Negative operating cash flow is retained as a valid cash-consumption condition.
+Examples:
+  - ABB 2015
+  - ADANIENSOL 2015
+  - AXISBANK 2015
+  - AXISBANK 2016
+  - AXISBANK 2018
+  - AXISBANK 2024
+  - BAJAJFINSV 2013
+  - BAJAJFINSV 2014
+  - BAJAJFINSV 2015
+  - BAJAJFINSV 2016
+
+[ZERO_OPERATING_CASH_FLOW]
+Count: 2
+Explanation: Zero CFO is valid; ratios using CFO as denominator return NULL when undefined.
+Examples:
+  - ABB 2014
+  - ADANIENSOL 2014
+
+[NEGATIVE_TO_POSITIVE_TURNAROUND]
+Count: 38
+Explanation: Negative-to-positive profit transitions are turnarounds; percentage growth from a negative base is NULL.
+Examples:
+  - ADANIENSOL 2016
+  - ADANIGREEN 2021
+  - ADANIPOWER 2016
+  - ADANIPOWER 2021
+  - BANKBARODA 2017
+  - BANKBARODA 2019
+  - BHARTIARTL 2022
+  - BHEL 2017
+  - BHEL 2022
+  - CANBK 2017
+
+[BANK_ROCE_CARVE_OUT]
+Count: 108
+Explanation: Generic ROCE is not applied to banks; their ROCE values are intentionally NULL.
+Examples:
+  - AXISBANK
+  - BANKBARODA
+  - CANBK
+  - HDFCBANK
+  - ICICIBANK
+  - INDUSINDBK
+  - KOTAKBANK
+  - PNB
+  - SBIN
+
+[SOURCE_ROW_LIMITATION]
+Count: 27
+Explanation: The 92-company source union contains 1,073 unique company-year keys, below the 1,100-row specification. No artificial company-years are created.

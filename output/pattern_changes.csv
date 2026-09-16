@@ -1,0 +1,93 @@
+company_id,previous_year,latest_year,previous_pattern,latest_pattern,pattern_changed,previous_pattern_code,latest_pattern_code
+ABB,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+ADANIENSOL,2023,2024,Growth + External Funding,Self-Funded Growth,True,+-+,+--
+ADANIENT,2023,2024,Self-Funded Growth,Growth + External Funding,True,+--,+-+
+ADANIGREEN,2023,2024,Self-Funded Growth,Growth + External Funding,True,+--,+-+
+ADANIPORTS,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+ADANIPOWER,2023,2024,Shareholder Returns,Shareholder Returns,False,++-,++-
+AMBUJACEM,2023,2024,Growth + External Funding,Growth + External Funding,False,+-+,+-+
+APOLLOHOSP,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+ASIANPAINT,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+ATGL,2023,2024,Data Unavailable,Data Unavailable,False,+++,+++
+AXISBANK,2023,2024,Growth + External Funding,Cash Burn,True,+-+,--+
+BAJAJ-AUTO,2023,2024,Shareholder Returns,Self-Funded Growth,True,++-,+--
+BAJAJFINSV,2023,2024,Cash Burn,Cash Burn,False,--+,--+
+BAJAJHLDNG,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+BAJFINANCE,2023,2024,Cash Burn,Cash Burn,False,--+,--+
+BANKBARODA,2023,2024,Restructuring,Cash Burn,True,---,--+
+BEL,2023,2024,Shareholder Returns,Self-Funded Growth,True,++-,+--
+BHARTIARTL,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+BHEL,2023,2024,Asset Monetisation,Asset Monetisation,False,-++,-++
+BOSCHLTD,2023,2024,Shareholder Returns,Shareholder Returns,False,++-,++-
+BPCL,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+BRITANNIA,2023,2024,Self-Funded Growth,Shareholder Returns,True,+--,++-
+CANBK,2023,2024,Cash Burn,Self-Funded Growth,True,--+,+--
+CHOLAFIN,2023,2024,Cash Burn,Cash Burn,False,--+,--+
+CIPLA,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+COALINDIA,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+DABUR,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+DIVISLAB,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+DLF,2023,2024,Self-Funded Growth,Growth + External Funding,True,+--,+-+
+DMART,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+DRREDDY,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+EICHERMOT,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+GAIL,2023,2024,Growth + External Funding,Self-Funded Growth,True,+-+,+--
+GODREJCP,2023,2024,Self-Funded Growth,Growth + External Funding,True,+--,+-+
+GRASIM,2023,2024,Cash Burn,Cash Burn,False,--+,--+
+HAL,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+HAVELLS,2023,2024,Shareholder Returns,Self-Funded Growth,True,++-,+--
+HCLTECH,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+HDFCBANK,2023,2024,Growth + External Funding,Shareholder Returns,True,+-+,++-
+HDFCLIFE,2023,2024,Growth + External Funding,Self-Funded Growth,True,+-+,+--
+HEROMOTOCO,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+HINDALCO,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+HINDUNILVR,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+ICICIBANK,2023,2024,Cash Burn,Growth + External Funding,True,--+,+-+
+ICICIGI,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+ICICIPRULI,2023,2024,Self-Funded Growth,Distress / Funding Need,True,+--,-+-
+INDIGO,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+INDUSINDBK,2023,2024,Cash Burn,Restructuring,True,--+,---
+INFY,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+IOC,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+IRCTC,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+IRFC,2023,2024,Data Unavailable,Self-Funded Growth,True,-++,+--
+ITC,2023,2024,Self-Funded Growth,Shareholder Returns,True,+--,++-
+JINDALSTEL,2023,2024,Self-Funded Growth,Growth + External Funding,True,+--,+-+
+JIOFIN,2023,2024,Self-Funded Growth,Distress / Funding Need,True,+--,-+-
+JSWENERGY,2023,2024,Growth + External Funding,Growth + External Funding,False,+-+,+-+
+JSWSTEEL,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+KOTAKBANK,2023,2024,Cash Burn,Growth + External Funding,True,--+,+-+
+LICI,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+LODHA,2023,2024,Shareholder Returns,Growth + External Funding,True,++-,+-+
+LT,2023,2024,Self-Funded Growth,Shareholder Returns,True,+--,++-
+LTIM,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+M&M,2023,2024,Cash Burn,Cash Burn,False,--+,--+
+MARUTI,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+MOTHERSON,2023,2024,Self-Funded Growth,Growth + External Funding,True,+--,+-+
+NAUKRI,2023,2024,Growth + External Funding,Growth + External Funding,False,+-+,+-+
+NESTLEIND,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+NHPC,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+NTPC,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+ONGC,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+PFC,2023,2024,Cash Burn,Cash Burn,False,--+,--+
+PIDILITIND,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+PNB,2023,2024,Growth + External Funding,Cash Burn,True,+-+,--+
+POWERGRID,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+RECLTD,2023,2024,Cash Burn,Cash Burn,False,--+,--+
+RELIANCE,2023,2024,Growth + External Funding,Self-Funded Growth,True,+-+,+--
+SBILIFE,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+SBIN,2023,2024,Cash Burn,Self-Funded Growth,True,--+,+--
+SHREECEM,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+SHRIRAMFIN,2023,2024,Asset Monetisation,Cash Burn,True,-++,--+
+SIEMENS,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+SUNPHARMA,2023,2024,Growth + External Funding,Self-Funded Growth,True,+-+,+--
+TATACONSUM,2023,2024,Self-Funded Growth,Growth + External Funding,True,+--,+-+
+TATAMOTORS,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+TATAPOWER,2023,2024,Growth + External Funding,Self-Funded Growth,True,+-+,+--
+TATASTEEL,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+TCS,2023,2024,Shareholder Returns,Shareholder Returns,False,++-,++-
+TECHM,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+TITAN,2023,2024,Growth + External Funding,Self-Funded Growth,True,+-+,+--
+TORNTPHARM,2023,2024,Growth + External Funding,Self-Funded Growth,True,+-+,+--
+TRENT,2023,2024,Self-Funded Growth,Self-Funded Growth,False,+--,+--
+TVSMOTOR,2023,2024,Cash Burn,Cash Burn,False,--+,--+

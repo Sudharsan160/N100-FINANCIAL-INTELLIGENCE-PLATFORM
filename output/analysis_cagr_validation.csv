@@ -1,0 +1,66 @@
+company_id,metric_type,period_years,value_pct,computed_cagr_pct,absolute_difference_pct,divergence_pct,manual_review,validation_status
+HDFCBANK,sales_cagr,10,21.0,20.887964823195592,0.11203517680440811,0.5363623395228801,False,Validated
+HDFCBANK,profit_cagr,10,22.0,22.263903320427715,0.26390332042771547,1.18534165653503,False,Validated
+HDFCBANK,stock_price_cagr,10,15.0,,,,False,Not comparable
+HDFCBANK,roe,10,17.0,,,,False,Not comparable
+SBILIFE,sales_cagr,5,24.0,24.231614182367544,0.23161418236754372,0.9558347232850912,False,Validated
+SBILIFE,profit_cagr,5,6.0,7.374662152227485,1.3746621522274847,18.640340721402048,True,Divergence > 5%
+SBILIFE,stock_price_cagr,5,8.0,,,,False,Not comparable
+SBILIFE,roe,5,14.0,,,,False,Not comparable
+SBILIFE,sales_cagr,3,17.0,17.235877577119997,0.23587757711999657,1.3685266448696265,False,Validated
+SBILIFE,profit_cagr,3,9.0,9.162347526806492,0.16234752680649223,1.7718988101194406,False,Validated
+SBILIFE,stock_price_cagr,3,7.0,,,,False,Not comparable
+SBILIFE,roe,3,13.0,,,,False,Not comparable
+SBILIFE,stock_price_cagr,1,-2.0,,,,False,Not comparable
+TCS,sales_cagr,10,11.0,11.404391189817975,0.40439118981797506,3.545925276388467,False,Validated
+TCS,profit_cagr,10,9.0,9.07908137484088,0.07908137484088051,0.8710283736416724,False,Validated
+TCS,stock_price_cagr,10,14.0,,,,False,Not comparable
+TCS,roe,10,40.0,,,,False,Not comparable
+TCS,sales_cagr,5,10.0,10.463614801716602,0.4636148017166022,4.4307326913500695,False,Validated
+TCS,profit_cagr,5,8.0,7.871172131953608,0.12882786804639235,1.6367050025930197,False,Validated
+TCS,stock_price_cagr,5,16.0,,,,False,Not comparable
+TCS,roe,5,44.0,,,,False,Not comparable
+TCS,sales_cagr,3,14.0,13.632864555506409,0.3671354444935915,2.693017619288992,False,Validated
+TCS,profit_cagr,3,12.0,12.286310199806593,0.2863101998065929,2.3303188276257254,False,Validated
+TCS,stock_price_cagr,3,8.0,,,,False,Not comparable
+TCS,roe,3,47.0,,,,False,Not comparable
+TCS,stock_price_cagr,1,16.0,,,,False,Not comparable
+WIPRO,sales_cagr,10,8.0,7.531400415089795,0.4685995849102049,6.221944911750094,True,Divergence > 5%
+WIPRO,profit_cagr,10,3.0,3.352053540077038,0.35205354007703793,10.502622821142257,True,Divergence > 5%
+WIPRO,stock_price_cagr,10,12.0,,,,False,Not comparable
+WIPRO,roe,10,18.0,,,,False,Not comparable
+WIPRO,sales_cagr,5,9.0,8.747228996316725,0.2527710036832751,2.8897266070170526,False,Validated
+WIPRO,profit_cagr,5,4.0,4.26448450032566,0.2644845003256604,6.202027473788751,True,Divergence > 5%
+WIPRO,stock_price_cagr,5,20.0,,,,False,Not comparable
+WIPRO,roe,5,17.0,,,,False,Not comparable
+WIPRO,sales_cagr,3,13.0,13.165896258558462,0.1658962585584618,1.2600453117699548,False,Validated
+WIPRO,profit_cagr,3,0.0,0.7428426173168301,0.7428426173168301,100.0,True,Divergence > 5%
+WIPRO,stock_price_cagr,3,-1.0,,,,False,Not comparable
+WIPRO,roe,3,17.0,,,,False,Not comparable
+HDFCBANK,sales_cagr,5,22.0,21.95098428169122,0.049015718308780265,0.22329622070598026,False,Validated
+HDFCBANK,profit_cagr,5,23.0,23.865063572879073,0.8650635728790732,3.6248115167904085,False,Validated
+HDFCBANK,stock_price_cagr,5,8.0,,,,False,Not comparable
+HDFCBANK,roe,5,17.0,,,,False,Not comparable
+WIPRO,stock_price_cagr,1,39.0,,,,False,Not comparable
+HDFCBANK,sales_cagr,3,30.0,30.186956140948773,0.186956140948773,0.6193275667670447,False,Validated
+HDFCBANK,profit_cagr,3,26.0,27.12356908487252,1.1235690848725213,4.142408697604488,False,Validated
+HDFCBANK,stock_price_cagr,3,8.0,,,,False,Not comparable
+HDFCBANK,roe,3,17.0,,,,False,Not comparable
+HDFCBANK,stock_price_cagr,1,13.0,,,,False,Not comparable
+INFY,sales_cagr,10,12.0,11.852717458931128,0.14728254106887206,1.2426056858201184,False,Validated
+INFY,profit_cagr,10,9.0,9.433477603192465,0.43347760319246476,4.5950986627218775,False,Validated
+INFY,stock_price_cagr,10,15.0,,,,False,Not comparable
+INFY,roe,10,27.0,,,,False,Not comparable
+INFY,sales_cagr,5,13.0,13.199100930556229,0.19910093055622902,1.5084431250563868,False,Validated
+INFY,profit_cagr,5,11.0,11.239419983657939,0.23941998365793893,2.130180952451767,False,Validated
+INFY,stock_price_cagr,5,22.0,,,,False,Not comparable
+INFY,roe,5,29.0,,,,False,Not comparable
+INFY,sales_cagr,3,5.0,15.216500798806365,10.216500798806365,67.14093426530614,True,Divergence > 5%
+INFY,profit_cagr,3,10.0,10.558796476740762,0.5587964767407616,5.292236458688218,True,Divergence > 5%
+INFY,stock_price_cagr,3,4.0,,,,False,Not comparable
+INFY,roe,3,31.0,,,,False,Not comparable
+INFY,stock_price_cagr,1,27.0,,,,False,Not comparable
+SBILIFE,sales_cagr,10,23.0,22.56159335451695,0.43840664548304886,1.9431546282846088,False,Validated
+SBILIFE,profit_cagr,10,9.0,10.03348279743188,1.0334827974318799,10.300339556035368,True,Divergence > 5%
+SBILIFE,stock_price_cagr,10,9.0,,,,False,Not comparable
+SBILIFE,roe,10,16.0,,,,False,Not comparable

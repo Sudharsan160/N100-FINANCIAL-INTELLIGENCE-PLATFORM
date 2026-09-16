@@ -1,0 +1,16 @@
+company_id,metric_type,source_column,raw_text,row_number,failure_reason
+SBILIFE,sales_cagr,compounded_sales_growth,TTM:            43%,5,Pattern not matched
+SBILIFE,profit_cagr,compounded_profit_growth,TTM:                 18%,5,Pattern not matched
+SBILIFE,roe,roe,Last Year:      12%,5,Pattern not matched
+TCS,sales_cagr,compounded_sales_growth,TTM:            5%             ,9,Pattern not matched
+TCS,profit_cagr,compounded_profit_growth,TTM:                 8%,9,Pattern not matched
+TCS,roe,roe,Last Year:       52%,9,Pattern not matched
+WIPRO,sales_cagr,compounded_sales_growth,TTM:           -3%,14,Pattern not matched
+WIPRO,profit_cagr,compounded_profit_growth,TTM:                 1%,14,Pattern not matched
+WIPRO,roe,roe,Last Year:       14%,14,Pattern not matched
+HDFCBANK,sales_cagr,compounded_sales_growth,TTM:            47%,16,Pattern not matched
+HDFCBANK,profit_cagr,compounded_profit_growth,TTM:                27%,16,Pattern not matched
+HDFCBANK,roe,roe,Last Year:    17%,16,Pattern not matched
+INFY,sales_cagr,compounded_sales_growth,TTM:            3%,20,Pattern not matched
+INFY,profit_cagr,compounded_profit_growth,TTM:                 8%,20,Pattern not matched
+INFY,roe,roe,Last Year:     32%,20,Pattern not matched

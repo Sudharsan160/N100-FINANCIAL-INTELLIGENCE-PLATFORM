@@ -10,6 +10,8 @@ ROOT = Path(__file__).resolve().parents[2]
 
 DB_PATH = ROOT / "nifty100.db"
 OUTPUT_DIR = ROOT / "reports" / "tearsheets"
+SKIPPED_FILE = ROOT / "output" / "skipped_tearsheets.csv"
+FAILURE_FILE = ROOT / "output" / "tearsheet_failures.csv"
 
 
 def load_companies():
@@ -64,56 +66,25 @@ def main():
 
     companies = load_companies()
 
-    skipped = companies[
-        companies["financial_years"] < 3
-    ].copy()
-
-    eligible = companies[
-        companies["financial_years"] >= 3
-    ].copy()
-
-    skipped_file = ROOT / "output" / "skipped_tearsheets.csv"
-
-    if skipped.empty:
-        skipped.to_csv(
-            skipped_file,
-            index=False,
-        )
-    else:
-        skipped.to_csv(
-            skipped_file,
-            index=False,
-        )
-
     print("=== DAY 34 TEARSHEET BATCH ===")
     print(f"Total companies: {len(companies)}")
-    print(f"Eligible companies: {len(eligible)}")
-    print(f"Skipped companies: {len(skipped)}")
+    print("Minimum-history filter: DISABLED")
+    print("Generating all companies, including short-history companies.\n")
 
-    if not skipped.empty:
-        print("\nSkipped:")
-        print(
-            skipped[
-                [
-                    "company_id",
-                    "company_name",
-                    "financial_years",
-                ]
-            ].to_string(index=False)
-        )
+    # The original Sprint 5 implementation skipped short-history companies.
+    # Current DoD explicitly requires all 92 company PDFs, so every company
+    # is attempted and missing historical values are shown as N/A.
 
-    success = []
+    successes = []
     failures = []
 
-    print("\nGenerating PDFs...\n")
-
-    for _, row in eligible.iterrows():
+    for _, row in companies.iterrows():
         ticker = str(row["company_id"])
 
         try:
             output = generate_tearsheet(ticker)
 
-            success.append(ticker)
+            successes.append(ticker)
 
             print(
                 f"[OK] {ticker}: {output.name}"
@@ -123,6 +94,8 @@ def main():
             failures.append(
                 {
                     "company_id": ticker,
+                    "company_name": row["company_name"],
+                    "financial_years": row["financial_years"],
                     "error": str(exc),
                 }
             )
@@ -131,30 +104,38 @@ def main():
                 f"[ERROR] {ticker}: {exc}"
             )
 
-    failure_file = (
-        ROOT
-        / "output"
-        / "tearsheet_failures.csv"
+    # No companies are intentionally skipped in this version.
+    pd.DataFrame(
+        columns=[
+            "company_id",
+            "company_name",
+            "financial_years",
+            "reason",
+        ]
+    ).to_csv(
+        SKIPPED_FILE,
+        index=False,
     )
 
     pd.DataFrame(
         failures
     ).to_csv(
-        failure_file,
+        FAILURE_FILE,
         index=False,
     )
 
     print("\n=== FINAL BATCH RESULT ===")
-    print(f"Generated: {len(success)}")
+    print(f"Total companies: {len(companies)}")
+    print(f"Generated: {len(successes)}")
     print(f"Failed: {len(failures)}")
-    print(f"Skipped: {len(skipped)}")
+    print("Skipped: 0")
 
     print(
-        f"\nSkipped file: {skipped_file}"
+        f"\nSkipped file: {SKIPPED_FILE}"
     )
 
     print(
-        f"Failure file: {failure_file}"
+        f"Failure file: {FAILURE_FILE}"
     )
 
 

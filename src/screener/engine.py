@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 import yaml
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 DEFAULT_DB_PATH = PROJECT_ROOT / "nifty100.db"
@@ -40,14 +39,10 @@ class ScreenerEngine:
         self.config_path = Path(config_path)
 
         if not self.db_path.exists():
-            raise FileNotFoundError(
-                f"Database not found: {self.db_path}"
-            )
+            raise FileNotFoundError(f"Database not found: {self.db_path}")
 
         if not self.config_path.exists():
-            raise FileNotFoundError(
-                f"Config not found: {self.config_path}"
-            )
+            raise FileNotFoundError(f"Config not found: {self.config_path}")
 
         self.config = self._load_config()
 
@@ -65,9 +60,7 @@ class ScreenerEngine:
             config = yaml.safe_load(file)
 
         if not isinstance(config, dict):
-            raise ValueError(
-                "screener_config.yaml must contain a YAML mapping."
-            )
+            raise TypeError("screener_config.yaml must contain a YAML mapping.")
 
         return config
 
@@ -92,9 +85,7 @@ class ScreenerEngine:
         }
 
         if table_name not in allowed_tables:
-            raise ValueError(
-                f"Unsupported table: {table_name}"
-            )
+            raise ValueError(f"Unsupported table: {table_name}")
 
         return pd.read_sql_query(
             f"SELECT * FROM {table_name}",
@@ -150,9 +141,7 @@ class ScreenerEngine:
         missing = required - set(history.columns)
 
         if missing:
-            raise KeyError(
-                f"Missing columns for CAGR calculation: {sorted(missing)}"
-            )
+            raise KeyError(f"Missing columns for CAGR calculation: {sorted(missing)}")
 
         data = history[
             [
@@ -236,14 +225,7 @@ class ScreenerEngine:
                 if end_value <= 0:
                     continue
 
-                cagr = (
-                    (
-                        end_value
-                        / start_value
-                    )
-                    ** (1.0 / years)
-                    - 1.0
-                ) * 100.0
+                cagr = ((end_value / start_value) ** (1.0 / years) - 1.0) * 100.0
 
                 rows.append(
                     {
@@ -315,14 +297,10 @@ class ScreenerEngine:
             )
 
         if ratios.empty:
-            raise ValueError(
-                "financial_ratios table is empty."
-            )
+            raise ValueError("financial_ratios table is empty.")
 
         if year == "latest":
-            selected_year = int(
-                ratios["year"].max()
-            )
+            selected_year = int(ratios["year"].max())
         else:
             selected_year = int(year)
 
@@ -438,10 +416,9 @@ class ScreenerEngine:
         # FCF history
         # --------------------------------------------------------
 
-        cashflow["free_cash_flow"] = (
-            cashflow["operating_activity"].fillna(0)
-            + cashflow["investing_activity"].fillna(0)
-        )
+        cashflow["free_cash_flow"] = cashflow["operating_activity"].fillna(
+            0
+        ) + cashflow["investing_activity"].fillna(0)
 
         # --------------------------------------------------------
         # CAGR tables
@@ -493,21 +470,13 @@ class ScreenerEngine:
         # Latest year tables
         # --------------------------------------------------------
 
-        latest_ratios = ratios.loc[
-            ratios["year"] == selected_year
-        ].copy()
+        latest_ratios = ratios.loc[ratios["year"] == selected_year].copy()
 
-        latest_pnl = pnl.loc[
-            pnl["year"] == selected_year
-        ].copy()
+        latest_pnl = pnl.loc[pnl["year"] == selected_year].copy()
 
-        latest_cashflow = cashflow.loc[
-            cashflow["year"] == selected_year
-        ].copy()
+        latest_cashflow = cashflow.loc[cashflow["year"] == selected_year].copy()
 
-        latest_market = market.loc[
-            market["year"] == selected_year
-        ].copy()
+        latest_market = market.loc[market["year"] == selected_year].copy()
 
         # --------------------------------------------------------
         # P&L columns
@@ -523,11 +492,7 @@ class ScreenerEngine:
         ]
 
         latest_pnl = latest_pnl[
-            [
-                column
-                for column in pnl_columns
-                if column in latest_pnl.columns
-            ]
+            [column for column in pnl_columns if column in latest_pnl.columns]
         ]
 
         # --------------------------------------------------------
@@ -544,11 +509,7 @@ class ScreenerEngine:
         ]
 
         latest_cashflow = latest_cashflow[
-            [
-                column
-                for column in cashflow_columns
-                if column in latest_cashflow.columns
-            ]
+            [column for column in cashflow_columns if column in latest_cashflow.columns]
         ]
 
         # --------------------------------------------------------
@@ -567,11 +528,7 @@ class ScreenerEngine:
         ]
 
         latest_market = latest_market[
-            [
-                column
-                for column in market_columns
-                if column in latest_market.columns
-            ]
+            [column for column in market_columns if column in latest_market.columns]
         ]
 
         # --------------------------------------------------------
@@ -624,11 +581,7 @@ class ScreenerEngine:
         ]
 
         sectors = sectors[
-            [
-                column
-                for column in sector_columns
-                if column in sectors.columns
-            ]
+            [column for column in sector_columns if column in sectors.columns]
         ]
 
         data = data.merge(
@@ -653,11 +606,7 @@ class ScreenerEngine:
         ]
 
         companies = companies[
-            [
-                column
-                for column in company_columns
-                if column in companies.columns
-            ]
+            [column for column in company_columns if column in companies.columns]
         ]
 
         data = data.merge(
@@ -696,10 +645,8 @@ class ScreenerEngine:
         # --------------------------------------------------------
 
         data["cfo_pat_ratio"] = np.where(
-            data["net_profit"].notna()
-            & data["net_profit"].ne(0),
-            data["operating_activity"]
-            / data["net_profit"],
+            data["net_profit"].notna() & data["net_profit"].ne(0),
+            data["operating_activity"] / data["net_profit"],
             np.nan,
         )
 
@@ -708,9 +655,7 @@ class ScreenerEngine:
         # --------------------------------------------------------
 
         if "free_cash_flow_cr" not in data.columns:
-            data["free_cash_flow_cr"] = (
-                data["free_cash_flow"]
-            )
+            data["free_cash_flow_cr"] = data["free_cash_flow"]
 
         # --------------------------------------------------------
         # ICR STANDARDIZATION
@@ -723,9 +668,7 @@ class ScreenerEngine:
 
         # Older representation:
         # 999 = Debt Free
-        data["interest_coverage"] = data[
-            "interest_coverage"
-        ].replace(
+        data["interest_coverage"] = data["interest_coverage"].replace(
             [999, 999.0],
             np.inf,
         )
@@ -734,10 +677,7 @@ class ScreenerEngine:
         # zero D/E or zero total debt = Debt Free.
         # Debt-free companies should always pass any
         # finite ICR threshold.
-        debt_free = (
-            data["debt_to_equity"].eq(0)
-            | data["total_debt_cr"].eq(0)
-        )
+        debt_free = data["debt_to_equity"].eq(0) | data["total_debt_cr"].eq(0)
 
         data.loc[
             debt_free,
@@ -752,10 +692,7 @@ class ScreenerEngine:
             data["broad_sector"] = "Unknown"
 
         data["broad_sector"] = (
-            data["broad_sector"]
-            .fillna("Unknown")
-            .astype(str)
-            .str.strip()
+            data["broad_sector"].fillna("Unknown").astype(str).str.strip()
         )
 
         # --------------------------------------------------------
@@ -807,9 +744,7 @@ class ScreenerEngine:
             keep="last",
         )
 
-        return data.reset_index(
-            drop=True
-        )
+        return data.reset_index(drop=True)
 
     # ============================================================
     # NORMALIZATION
@@ -861,13 +796,7 @@ class ScreenerEngine:
                 dtype=float,
             )
         else:
-            scores = (
-                (
-                    clipped - p10
-                )
-                / (p90 - p10)
-                * 100.0
-            )
+            scores = (clipped - p10) / (p90 - p10) * 100.0
 
         if inverse:
             scores = 100.0 - scores
@@ -896,28 +825,20 @@ class ScreenerEngine:
         if column not in data.columns:
             return result
 
-        sectors = (
-            data["broad_sector"]
-            .fillna("Unknown")
-            .astype(str)
-        )
+        sectors = data["broad_sector"].fillna("Unknown").astype(str)
 
         for sector_name in sectors.unique():
 
-            indices = data.index[
-                sectors == sector_name
-            ]
+            indices = data.index[sectors == sector_name]
 
             values = data.loc[
                 indices,
                 column,
             ]
 
-            result.loc[indices] = (
-                self._winsor_score(
-                    values,
-                    inverse=inverse,
-                )
+            result.loc[indices] = self._winsor_score(
+                values,
+                inverse=inverse,
             )
 
         return result
@@ -1030,11 +951,7 @@ class ScreenerEngine:
             "net_profit_margin_pct",
         )
 
-        profitability_score = (
-            roe_score * 0.15
-            + roce_score * 0.10
-            + npm_score * 0.10
-        )
+        profitability_score = roe_score * 0.15 + roce_score * 0.10 + npm_score * 0.10
 
         # --------------------------------------------------------
         # Cash Quality — 30%
@@ -1061,9 +978,7 @@ class ScreenerEngine:
         )
 
         cash_quality_score = (
-            fcf_cagr_score * 0.15
-            + cfo_pat_score * 0.10
-            + fcf_positive_score * 0.05
+            fcf_cagr_score * 0.15 + cfo_pat_score * 0.10 + fcf_positive_score * 0.05
         )
 
         # --------------------------------------------------------
@@ -1080,57 +995,38 @@ class ScreenerEngine:
             "pat_cagr_5yr",
         )
 
-        growth_score = (
-            revenue_growth_score * 0.10
-            + pat_growth_score * 0.10
-        )
+        growth_score = revenue_growth_score * 0.10 + pat_growth_score * 0.10
 
         # --------------------------------------------------------
         # Leverage — 15%
         # --------------------------------------------------------
 
-        de_score = self._de_score(
-            result["debt_to_equity"]
-        )
+        de_score = self._de_score(result["debt_to_equity"])
 
-        icr_score = self._icr_score(
-            result["interest_coverage"]
-        )
+        icr_score = self._icr_score(result["interest_coverage"])
 
-        leverage_score = (
-            de_score * 0.10
-            + icr_score * 0.05
-        )
+        leverage_score = de_score * 0.10 + icr_score * 0.05
 
         # --------------------------------------------------------
         # Final score
         # --------------------------------------------------------
 
-        result["profitability_score"] = (
-            profitability_score
-        )
+        result["profitability_score"] = profitability_score
 
-        result["cash_quality_score"] = (
-            cash_quality_score
-        )
+        result["cash_quality_score"] = cash_quality_score
 
-        result["growth_score"] = (
-            growth_score
-        )
+        result["growth_score"] = growth_score
 
-        result["leverage_score"] = (
-            leverage_score
-        )
+        result["leverage_score"] = leverage_score
 
         result["composite_quality_score"] = (
-            profitability_score
-            + cash_quality_score
-            + growth_score
-            + leverage_score
-        ).clip(
-            0,
-            100,
-        ).round(2)
+            (profitability_score + cash_quality_score + growth_score + leverage_score)
+            .clip(
+                0,
+                100,
+            )
+            .round(2)
+        )
 
         return result
 
@@ -1148,9 +1044,7 @@ class ScreenerEngine:
         """Apply one numeric filter."""
 
         if column not in data.columns:
-            raise KeyError(
-                f"Screener column not found: {column}"
-            )
+            raise KeyError(f"Screener column not found: {column}")
 
         series = pd.to_numeric(
             data[column],
@@ -1178,9 +1072,7 @@ class ScreenerEngine:
             )
 
         else:
-            raise ValueError(
-                f"Unsupported operator: {operator}"
-            )
+            raise ValueError(f"Unsupported operator: {operator}")
 
         return pd.Series(
             mask,
@@ -1234,29 +1126,19 @@ class ScreenerEngine:
                 continue
 
             if metric not in filter_config:
-                raise KeyError(
-                    f"Unknown screener filter: {metric}"
-                )
+                raise KeyError(f"Unknown screener filter: {metric}")
 
-            definition = filter_config[
-                metric
-            ]
+            definition = filter_config[metric]
 
-            column = definition[
-                "column"
-            ]
+            column = definition["column"]
 
-            operator = definition[
-                "operator"
-            ]
+            operator = definition["operator"]
 
-            current_mask = (
-                self._apply_numeric_filter(
-                    result,
-                    column,
-                    operator,
-                    float(threshold),
-                )
+            current_mask = self._apply_numeric_filter(
+                result,
+                column,
+                operator,
+                float(threshold),
             )
 
             # IMPORTANT:
@@ -1272,10 +1154,7 @@ class ScreenerEngine:
                     .eq("financials")
                 )
 
-                current_mask = (
-                    current_mask
-                    | financials
-                )
+                current_mask = current_mask | financials
 
             mask &= current_mask
 
@@ -1285,17 +1164,11 @@ class ScreenerEngine:
 
         if "dividend_payout_max" in thresholds:
 
-            current_mask = (
-                self._apply_numeric_filter(
-                    result,
-                    "dividend_payout_ratio_pct",
-                    "<=",
-                    float(
-                        thresholds[
-                            "dividend_payout_max"
-                        ]
-                    ),
-                )
+            current_mask = self._apply_numeric_filter(
+                result,
+                "dividend_payout_ratio_pct",
+                "<=",
+                float(thresholds["dividend_payout_max"]),
             )
 
             mask &= current_mask
@@ -1306,17 +1179,11 @@ class ScreenerEngine:
 
         if "revenue_cagr_3yr_min" in thresholds:
 
-            current_mask = (
-                self._apply_numeric_filter(
-                    result,
-                    "revenue_cagr_3yr",
-                    ">=",
-                    float(
-                        thresholds[
-                            "revenue_cagr_3yr_min"
-                        ]
-                    ),
-                )
+            current_mask = self._apply_numeric_filter(
+                result,
+                "revenue_cagr_3yr",
+                ">=",
+                float(thresholds["revenue_cagr_3yr_min"]),
             )
 
             mask &= current_mask
@@ -1327,15 +1194,11 @@ class ScreenerEngine:
 
         if "de_exact" in thresholds:
 
-            current_mask = (
-                self._apply_numeric_filter(
-                    result,
-                    "debt_to_equity",
-                    "==",
-                    float(
-                        thresholds["de_exact"]
-                    ),
-                )
+            current_mask = self._apply_numeric_filter(
+                result,
+                "debt_to_equity",
+                "==",
+                float(thresholds["de_exact"]),
             )
 
             # NO Financials exemption here.
@@ -1351,9 +1214,7 @@ class ScreenerEngine:
             False,
         ):
 
-            with sqlite3.connect(
-                self.db_path
-            ) as conn:
+            with sqlite3.connect(self.db_path) as conn:
 
                 history = pd.read_sql_query(
                     """
@@ -1392,37 +1253,21 @@ class ScreenerEngine:
                 ]
             )
 
-            history["previous_de"] = (
-                history
-                .groupby("company_id")[
-                    "debt_to_equity"
-                ]
-                .shift(1)
-            )
+            history["previous_de"] = history.groupby("company_id")[
+                "debt_to_equity"
+            ].shift(1)
 
-            latest_year = int(
-                history["year"].max()
-            )
+            latest_year = int(history["year"].max())
 
-            latest_history = history.loc[
-                history["year"] == latest_year
-            ].copy()
+            latest_history = history.loc[history["year"] == latest_year].copy()
 
             latest_history["is_declining"] = (
-                latest_history["debt_to_equity"]
-                <
-                latest_history["previous_de"]
+                latest_history["debt_to_equity"] < latest_history["previous_de"]
             )
 
-            decline_map = latest_history.set_index(
-                "company_id"
-            )["is_declining"]
+            decline_map = latest_history.set_index("company_id")["is_declining"]
 
-            current_mask = (
-                result["company_id"]
-                .map(decline_map)
-                .fillna(False)
-            )
+            current_mask = result["company_id"].map(decline_map).fillna(False)
 
             mask &= current_mask
 
@@ -1430,9 +1275,7 @@ class ScreenerEngine:
         # Final
         # --------------------------------------------------------
 
-        return result.loc[
-            mask
-        ].copy()
+        return result.loc[mask].copy()
 
     # ============================================================
     # SCREEN
@@ -1445,13 +1288,9 @@ class ScreenerEngine:
     ) -> pd.DataFrame:
         """Run a custom screener."""
 
-        data = self.load_data(
-            year=year
-        )
+        data = self.load_data(year=year)
 
-        data = self.add_composite_quality_score(
-            data
-        )
+        data = self.add_composite_quality_score(data)
 
         if thresholds:
             data = self.apply_filters(
@@ -1463,9 +1302,7 @@ class ScreenerEngine:
             by="composite_quality_score",
             ascending=False,
             na_position="last",
-        ).reset_index(
-            drop=True
-        )
+        ).reset_index(drop=True)
 
     # ============================================================
     # PRESET
@@ -1489,9 +1326,7 @@ class ScreenerEngine:
                 f"Available presets: {list(presets.keys())}"
             )
 
-        preset_config = presets[
-            preset_name
-        ]
+        preset_config = presets[preset_name]
 
         thresholds = preset_config.get(
             "thresholds",
@@ -1522,14 +1357,13 @@ class ScreenerEngine:
                 na_position="last",
             )
 
-        return result.reset_index(
-            drop=True
-        )
+        return result.reset_index(drop=True)
 
 
 # ================================================================
 # CONVENIENCE FUNCTION
 # ================================================================
+
 
 def run_screener(
     thresholds: dict[str, Any],

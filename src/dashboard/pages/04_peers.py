@@ -12,7 +12,6 @@ from src.dashboard.utils.db import (
     get_sectors,
 )
 
-
 ROOT_DIR = Path(__file__).resolve().parents[3]
 DB_PATH = ROOT_DIR / "nifty100.db"
 
@@ -71,9 +70,7 @@ peer_ids = peer_df["company_id"].astype(str).tolist()
 # ---------------------------------------------------------
 # Select company
 # ---------------------------------------------------------
-company_lookup = companies[
-    companies["company_id"].astype(str).isin(peer_ids)
-].copy()
+company_lookup = companies[companies["company_id"].astype(str).isin(peer_ids)].copy()
 
 company_lookup["label"] = (
     company_lookup["company_id"].astype(str)
@@ -123,8 +120,7 @@ ratios["year"] = pd.to_numeric(
 )
 
 ratios = (
-    ratios
-    .sort_values(["company_id", "year"])
+    ratios.sort_values(["company_id", "year"])
     .groupby("company_id", as_index=False)
     .tail(1)
 )
@@ -160,9 +156,7 @@ for column in metric_map.values():
 # ---------------------------------------------------------
 # Benchmark row
 # ---------------------------------------------------------
-benchmark = ratios[
-    ratios["company_id"].astype(str) == selected_company
-]
+benchmark = ratios[ratios["company_id"].astype(str) == selected_company]
 
 if benchmark.empty:
     st.warning("Selected company has no ratio data.")
@@ -174,9 +168,7 @@ benchmark = benchmark.iloc[0]
 # ---------------------------------------------------------
 # Radar chart
 # ---------------------------------------------------------
-st.subheader(
-    f"{selected_company} vs {selected_group} Average"
-)
+st.subheader(f"{selected_company} vs {selected_group} Average")
 
 
 metric_names = list(metric_map.keys())
@@ -184,7 +176,7 @@ benchmark_values = []
 peer_average_values = []
 
 
-for metric_name, column in metric_map.items():
+for column in metric_map.values():
 
     benchmark_value = pd.to_numeric(
         benchmark[column],
@@ -196,17 +188,9 @@ for metric_name, column in metric_map.items():
         errors="coerce",
     ).mean()
 
-    benchmark_values.append(
-        float(benchmark_value)
-        if pd.notna(benchmark_value)
-        else 0
-    )
+    benchmark_values.append(float(benchmark_value) if pd.notna(benchmark_value) else 0)
 
-    peer_average_values.append(
-        float(peer_average)
-        if pd.notna(peer_average)
-        else 0
-    )
+    peer_average_values.append(float(peer_average) if pd.notna(peer_average) else 0)
 
 
 # Radar charts require a closed polygon.
@@ -237,13 +221,13 @@ fig.add_trace(
 )
 
 fig.update_layout(
-    polar=dict(
-        radialaxis=dict(
-            visible=True,
-        )
-    ),
+    polar={
+        "radialaxis": {
+            "visible": True,
+        }
+    },
     height=550,
-    margin=dict(l=20, r=20, t=40, b=20),
+    margin={"l": 20, "r": 20, "t": 40, "b": 20},
 )
 
 st.plotly_chart(
@@ -260,22 +244,16 @@ st.divider()
 st.subheader("Peer Group Comparison")
 
 
-table = ratios[
-    ["company_id"] + list(metric_map.values())
-].copy()
+table = ratios[["company_id"] + list(metric_map.values())].copy()
 
 table = table.merge(
-    companies[
-        ["company_id", "company_name"]
-    ],
+    companies[["company_id", "company_name"]],
     on="company_id",
     how="left",
 )
 
 table = table.merge(
-    peer_df[
-        ["company_id", "is_benchmark"]
-    ],
+    peer_df[["company_id", "is_benchmark"]],
     on="company_id",
     how="left",
 )
@@ -299,23 +277,16 @@ table = table.rename(columns=rename_map)
 # Put benchmark first.
 table["_benchmark_sort"] = table["Benchmark"].fillna(0).astype(int)
 
-table = (
-    table
-    .sort_values(
-        ["_benchmark_sort", "Company"],
-        ascending=[False, True],
-    )
-    .drop(columns="_benchmark_sort")
-)
+table = table.sort_values(
+    ["_benchmark_sort", "Company"],
+    ascending=[False, True],
+).drop(columns="_benchmark_sort")
 
 
 # Highlight benchmark row.
 def highlight_benchmark(row):
     if row["Benchmark"] == 1:
-        return [
-            "font-weight: bold"
-            for _ in row
-        ]
+        return ["font-weight: bold" for _ in row]
 
     return [""] * len(row)
 
@@ -332,6 +303,4 @@ st.dataframe(
 )
 
 
-st.caption(
-    "Benchmark company is highlighted when marked in the peer-group database."
-)
+st.caption("Benchmark company is highlighted when marked in the peer-group database.")

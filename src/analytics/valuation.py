@@ -5,7 +5,6 @@ from pathlib import Path
 
 import pandas as pd
 
-
 ROOT_DIR = Path(__file__).resolve().parents[2]
 DB_PATH = ROOT_DIR / "nifty100.db"
 OUTPUT_DIR = ROOT_DIR / "output"
@@ -96,16 +95,12 @@ def calculate_valuation() -> pd.DataFrame:
     # -----------------------------------------------------
     latest_year = int(market["year"].max())
 
-    latest_market = market[
-        market["year"] == latest_year
-    ].copy()
+    latest_market = market[market["year"] == latest_year].copy()
 
     # -----------------------------------------------------
     # Latest FCF for each company/year
     # -----------------------------------------------------
-    latest_fcf = ratios[
-        ratios["year"] == latest_year
-    ][
+    latest_fcf = ratios[ratios["year"] == latest_year][
         [
             "company_id",
             "free_cash_flow_cr",
@@ -161,9 +156,7 @@ def calculate_valuation() -> pd.DataFrame:
     # FCF Yield
     # -----------------------------------------------------
     result["fcf_yield_pct"] = (
-        result["free_cash_flow_cr"]
-        / result["market_cap_crore"]
-        * 100.0
+        result["free_cash_flow_cr"] / result["market_cap_crore"] * 100.0
     )
 
     result.loc[
@@ -187,8 +180,7 @@ def calculate_valuation() -> pd.DataFrame:
     ].copy()
 
     five_year_pe = (
-        five_year_market
-        .groupby("company_id")["pe_ratio"]
+        five_year_market.groupby("company_id")["pe_ratio"]
         .median()
         .rename("5yr_median_PE")
         .reset_index()
@@ -204,8 +196,7 @@ def calculate_valuation() -> pd.DataFrame:
     # Sector median P/E
     # -----------------------------------------------------
     sector_medians = (
-        result
-        .groupby("broad_sector")["pe_ratio"]
+        result.groupby("broad_sector")["pe_ratio"]
         .median()
         .rename("sector_median_pe")
         .reset_index()
@@ -221,10 +212,7 @@ def calculate_valuation() -> pd.DataFrame:
     # P/E vs sector median
     # -----------------------------------------------------
     result["PE_vs_sector_median_pct"] = (
-        (
-            result["pe_ratio"]
-            / result["sector_median_pe"]
-        ) - 1
+        (result["pe_ratio"] / result["sector_median_pe"]) - 1
     ) * 100.0
 
     # -----------------------------------------------------

@@ -7,15 +7,12 @@ import streamlit as st
 
 from src.dashboard.utils.db import get_companies
 
-
 ROOT_DIR = Path(__file__).resolve().parents[3]
 DB_PATH = ROOT_DIR / "nifty100.db"
 
 
 st.title("Capital Allocation Map")
-st.caption(
-    "Nifty 100 companies grouped by cash-flow-based capital allocation pattern."
-)
+st.caption("Nifty 100 companies grouped by cash-flow-based capital allocation pattern.")
 
 
 # ---------------------------------------------------------
@@ -81,9 +78,7 @@ for column in [
 cf = cf.dropna(subset=["year"])
 
 latest_cf = (
-    cf.sort_values(["company_id", "year"])
-    .groupby("company_id", as_index=False)
-    .tail(1)
+    cf.sort_values(["company_id", "year"]).groupby("company_id", as_index=False).tail(1)
 )
 
 
@@ -165,9 +160,7 @@ latest_cf["capital_allocation_pattern"] = latest_cf.apply(
 # Merge company names
 # ---------------------------------------------------------
 data = latest_cf.merge(
-    companies[
-        ["company_id", "company_name"]
-    ],
+    companies[["company_id", "company_name"]],
     on="company_id",
     how="left",
 )
@@ -194,7 +187,7 @@ fig = px.treemap(
 
 fig.update_layout(
     height=500,
-    margin=dict(l=10, r=10, t=30, b=10),
+    margin={"l": 10, "r": 10, "t": 30, "b": 10},
 )
 
 st.plotly_chart(
@@ -225,9 +218,7 @@ selected_pattern = st.selectbox(
 )
 
 
-selected_companies = data[
-    data["capital_allocation_pattern"] == selected_pattern
-].copy()
+selected_companies = data[data["capital_allocation_pattern"] == selected_pattern].copy()
 
 
 # ---------------------------------------------------------
@@ -241,11 +232,7 @@ display_columns = [
     "financing_activity",
 ]
 
-display_columns = [
-    col
-    for col in display_columns
-    if col in selected_companies.columns
-]
+display_columns = [col for col in display_columns if col in selected_companies.columns]
 
 
 st.dataframe(
@@ -256,6 +243,5 @@ st.dataframe(
 
 
 st.caption(
-    f"{len(selected_companies)} companies in "
-    f"the '{selected_pattern}' pattern."
+    f"{len(selected_companies)} companies in " f"the '{selected_pattern}' pattern."
 )

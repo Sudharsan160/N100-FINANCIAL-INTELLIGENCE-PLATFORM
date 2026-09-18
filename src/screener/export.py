@@ -5,11 +5,10 @@ from typing import Any
 
 import pandas as pd
 from openpyxl import load_workbook
-from openpyxl.styles import PatternFill, Font, Alignment
+from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.utils import get_column_letter
 
 from src.screener.engine import ScreenerEngine
-
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 OUTPUT_PATH = PROJECT_ROOT / "output" / "screener_output.xlsx"
@@ -126,14 +125,13 @@ def auto_size_columns(ws):
             28,
         )
 
-        ws.column_dimensions[
-            get_column_letter(column_index)
-        ].width = width
+        ws.column_dimensions[get_column_letter(column_index)].width = width
 
 
 # ------------------------------------------------------------
 # Threshold colour coding
 # ------------------------------------------------------------
+
 
 def threshold_passes(
     value: Any,
@@ -148,12 +146,9 @@ def threshold_passes(
     """
 
     if metric == "roe_min":
-        column = "return_on_equity_pct"
         return value >= thresholds["roe_min"]
 
     if metric == "de_max":
-        column = "debt_to_equity"
-
         return value <= thresholds["de_max"]
 
     if metric == "fcf_min":
@@ -244,21 +239,17 @@ def colour_code_threshold_cells(
     for cell in ws[1]:
         header_map[cell.value] = cell.column
 
-    for filter_name, threshold in thresholds.items():
+    for filter_name in thresholds:
 
         if filter_name not in FILTER_TO_COLUMN:
             continue
 
-        column_name = FILTER_TO_COLUMN[
-            filter_name
-        ]
+        column_name = FILTER_TO_COLUMN[filter_name]
 
         if column_name not in header_map:
             continue
 
-        column_index = header_map[
-            column_name
-        ]
+        column_index = header_map[column_name]
 
         for row in range(2, ws.max_row + 1):
 
@@ -295,6 +286,7 @@ def colour_code_threshold_cells(
 # Export
 # ------------------------------------------------------------
 
+
 def build_screener_excel(
     engine: ScreenerEngine,
     output_path: Path = OUTPUT_PATH,
@@ -315,27 +307,16 @@ def build_screener_excel(
 
     for preset_name in PRESETS:
 
-        result = engine.preset(
-            preset_name
+        result = engine.preset(preset_name)
+
+        preset_results[preset_name] = result
+
+        display_name = engine.config["presets"][preset_name].get(
+            "display_name",
+            preset_name,
         )
 
-        preset_results[
-            preset_name
-        ] = result
-
-        display_name = (
-            engine.config[
-                "presets"
-            ][preset_name].get(
-                "display_name",
-                preset_name,
-            )
-        )
-
-        print(
-            f"{display_name}: "
-            f"{len(result)} companies"
-        )
+        print(f"{display_name}: " f"{len(result)} companies")
 
     # --------------------------------------------------------
     # Write Excel
@@ -348,24 +329,16 @@ def build_screener_excel(
 
         for preset_name, result in preset_results.items():
 
-            display_name = (
-                engine.config[
-                    "presets"
-                ][preset_name].get(
-                    "display_name",
-                    preset_name,
-                )
+            display_name = engine.config["presets"][preset_name].get(
+                "display_name",
+                preset_name,
             )
 
             export_columns = [
-                column
-                for column in EXPORT_COLUMNS
-                if column in result.columns
+                column for column in EXPORT_COLUMNS if column in result.columns
             ]
 
-            sheet_data = result[
-                export_columns
-            ].copy()
+            sheet_data = result[export_columns].copy()
 
             sheet_data.to_excel(
                 writer,
@@ -377,37 +350,25 @@ def build_screener_excel(
     # Styling
     # --------------------------------------------------------
 
-    workbook = load_workbook(
-        output_path
-    )
+    workbook = load_workbook(output_path)
 
     for preset_name in PRESETS:
 
-        display_name = (
-            engine.config[
-                "presets"
-            ][preset_name].get(
-                "display_name",
-                preset_name,
-            )
+        display_name = engine.config["presets"][preset_name].get(
+            "display_name",
+            preset_name,
         )
 
         sheet_name = display_name[:31]
 
-        ws = workbook[
-            sheet_name
-        ]
+        ws = workbook[sheet_name]
 
         apply_header_format(ws)
         auto_size_columns(ws)
 
-        thresholds = (
-            engine.config[
-                "presets"
-            ][preset_name].get(
-                "thresholds",
-                {},
-            )
+        thresholds = engine.config["presets"][preset_name].get(
+            "thresholds",
+            {},
         )
 
         colour_code_threshold_cells(
@@ -415,9 +376,7 @@ def build_screener_excel(
             thresholds,
         )
 
-    workbook.save(
-        output_path
-    )
+    workbook.save(output_path)
 
     return preset_results
 
@@ -426,40 +385,27 @@ def build_screener_excel(
 # Main
 # ------------------------------------------------------------
 
+
 def main():
 
-    print(
-        "N100 Day 17 - Screener Excel Export"
-    )
+    print("N100 Day 17 - Screener Excel Export")
 
     engine = ScreenerEngine()
 
-    results = build_screener_excel(
-        engine
-    )
+    results = build_screener_excel(engine)
 
-    print(
-        f"\nExcel export created:"
-        f"\n{OUTPUT_PATH}"
-    )
+    print(f"\nExcel export created:" f"\n{OUTPUT_PATH}")
 
     print("\nPreset summary:")
 
     for preset_name, result in results.items():
 
-        display_name = (
-            engine.config[
-                "presets"
-            ][preset_name].get(
-                "display_name",
-                preset_name,
-            )
+        display_name = engine.config["presets"][preset_name].get(
+            "display_name",
+            preset_name,
         )
 
-        print(
-            f"{display_name}: "
-            f"{len(result)} companies"
-        )
+        print(f"{display_name}: " f"{len(result)} companies")
 
 
 if __name__ == "__main__":

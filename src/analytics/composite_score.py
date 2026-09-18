@@ -36,7 +36,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-
 DB_PATH = "nifty100.db"
 OUTPUT_PATH = Path("output/composite_scores.csv")
 
@@ -44,6 +43,7 @@ OUTPUT_PATH = Path("output/composite_scores.csv")
 # ============================================================
 # HELPERS
 # ============================================================
+
 
 def calculate_cagr(start_value, end_value, years=5):
     """Calculate CAGR when both values are positive."""
@@ -107,12 +107,15 @@ def sector_normalize(
         "broad_sector",
         dropna=False,
         group_keys=False,
-    )[column].transform(normalize_group)
+    )[
+        column
+    ].transform(normalize_group)
 
 
 # ============================================================
 # LOAD DATABASE
 # ============================================================
+
 
 def load_data(db_path: str = DB_PATH):
     conn = sqlite3.connect(db_path)
@@ -180,17 +183,16 @@ def load_data(db_path: str = DB_PATH):
 
     # Latest available ratio year for every company.
     latest_ratios = (
-        ratios
-        .sort_values(["company_id", "year"])
+        ratios.sort_values(["company_id", "year"])
         .groupby("company_id", as_index=False)
         .tail(1)
         .copy()
     )
 
     latest_ratios = latest_ratios.merge(
-        sectors[
-            ["company_id", "broad_sector", "sub_sector"]
-        ].drop_duplicates("company_id"),
+        sectors[["company_id", "broad_sector", "sub_sector"]].drop_duplicates(
+            "company_id"
+        ),
         on="company_id",
         how="left",
     )
@@ -201,6 +203,7 @@ def load_data(db_path: str = DB_PATH):
 # ============================================================
 # HISTORICAL CAGR METRICS
 # ============================================================
+
 
 def add_growth_metrics(
     df: pd.DataFrame,
@@ -280,9 +283,7 @@ def add_growth_metrics(
     # FCF CAGR 5Y
     # --------------------------------------------------------
 
-    current_fcf = ratios.rename(
-        columns={"free_cash_flow_cr": "fcf_current"}
-    )[
+    current_fcf = ratios.rename(columns={"free_cash_flow_cr": "fcf_current"})[
         [
             "company_id",
             "year",
@@ -333,6 +334,7 @@ def add_growth_metrics(
 # COMPOSITE SCORE
 # ============================================================
 
+
 def calculate_scores(df: pd.DataFrame) -> pd.DataFrame:
     """Calculate the complete 0-100 composite score."""
 
@@ -359,9 +361,7 @@ def calculate_scores(df: pd.DataFrame) -> pd.DataFrame:
     # --------------------------------------------------------
 
     for metric in metrics:
-        result[f"{metric}_winsorized"] = winsorize(
-            result[metric]
-        )
+        result[f"{metric}_winsorized"] = winsorize(result[metric])
 
     # --------------------------------------------------------
     # Sector-relative 0-100 scores
@@ -376,14 +376,9 @@ def calculate_scores(df: pd.DataFrame) -> pd.DataFrame:
 
     # Missing normalized values become 0.
     # This avoids inventing values when source data is unavailable.
-    normalized_columns = [
-        f"{metric}_normalized"
-        for metric in metrics
-    ]
+    normalized_columns = [f"{metric}_normalized" for metric in metrics]
 
-    result[normalized_columns] = (
-        result[normalized_columns].fillna(0)
-    )
+    result[normalized_columns] = result[normalized_columns].fillna(0)
 
     # --------------------------------------------------------
     # FCF positive flag = 5 points
@@ -438,11 +433,15 @@ def calculate_scores(df: pd.DataFrame) -> pd.DataFrame:
     # --------------------------------------------------------
 
     result["composite_quality_score"] = (
-        result["profitability_score"]
-        + result["cash_quality_score"]
-        + result["growth_score"]
-        + result["leverage_score"]
-    ).clip(0, 100).round(2)
+        (
+            result["profitability_score"]
+            + result["cash_quality_score"]
+            + result["growth_score"]
+            + result["leverage_score"]
+        )
+        .clip(0, 100)
+        .round(2)
+    )
 
     return result
 
@@ -450,6 +449,7 @@ def calculate_scores(df: pd.DataFrame) -> pd.DataFrame:
 # ============================================================
 # EXPORT
 # ============================================================
+
 
 def export_scores(
     df: pd.DataFrame,
@@ -505,6 +505,7 @@ def export_scores(
 # MAIN
 # ============================================================
 
+
 def main():
     print("Loading N100 financial data...")
 
@@ -528,9 +529,7 @@ def main():
 
     exported = export_scores(scored)
 
-    print(
-        f"Composite score rows exported: {len(exported)}"
-    )
+    print(f"Composite score rows exported: {len(exported)}")
 
     print("\nTop 10 companies:")
     print(
@@ -540,12 +539,12 @@ def main():
                 "broad_sector",
                 "composite_quality_score",
             ]
-        ].head(10).to_string(index=False)
+        ]
+        .head(10)
+        .to_string(index=False)
     )
 
-    print(
-        f"\nExport created: {OUTPUT_PATH}"
-    )
+    print(f"\nExport created: {OUTPUT_PATH}")
 
 
 if __name__ == "__main__":

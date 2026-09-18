@@ -4,7 +4,6 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
-
 ROOT_DIR = Path(__file__).resolve().parents[3]
 DB_PATH = ROOT_DIR / "nifty100.db"
 
@@ -47,15 +46,8 @@ if query:
     q = query.strip().lower()
 
     matches = companies[
-        companies["company_id"]
-        .astype(str)
-        .str.lower()
-        .str.contains(q, na=False)
-        |
-        companies["company_name"]
-        .astype(str)
-        .str.lower()
-        .str.contains(q, na=False)
+        companies["company_id"].astype(str).str.lower().str.contains(q, na=False)
+        | companies["company_name"].astype(str).str.lower().str.contains(q, na=False)
     ].copy()
 else:
     matches = companies.copy()
@@ -67,9 +59,7 @@ if matches.empty:
 
 
 matches["label"] = (
-    matches["company_id"].astype(str)
-    + " — "
-    + matches["company_name"].astype(str)
+    matches["company_id"].astype(str) + " — " + matches["company_name"].astype(str)
 )
 
 
@@ -128,17 +118,9 @@ for _, row in reports.iterrows():
     year = row.get("year")
     url = row.get("annual_report")
 
-    year_text = (
-        str(int(year))
-        if pd.notna(year)
-        else "Unknown Year"
-    )
+    year_text = str(int(year)) if pd.notna(year) else "Unknown Year"
 
-    url_text = (
-        str(url).strip()
-        if pd.notna(url)
-        else ""
-    )
+    url_text = str(url).strip() if pd.notna(url) else ""
 
     with st.container(border=True):
 
@@ -149,9 +131,7 @@ for _, row in reports.iterrows():
 
         with col2:
             if url_text and url_text.lower() not in {"none", "null", "nan"}:
-                st.markdown(
-                    f"[Open BSE Annual Report]({url_text})"
-                )
+                st.markdown(f"[Open BSE Annual Report]({url_text})")
             else:
                 st.markdown("No report URL available.")
 
@@ -163,6 +143,4 @@ for _, row in reports.iterrows():
                 st.error("Report unavailable")
 
 
-st.caption(
-    "Report links are sourced from the documents table."
-)
+st.caption("Report links are sourced from the documents table.")

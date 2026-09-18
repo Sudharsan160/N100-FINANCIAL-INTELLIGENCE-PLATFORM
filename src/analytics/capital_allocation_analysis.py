@@ -2,7 +2,6 @@ from pathlib import Path
 
 import pandas as pd
 
-
 ROOT = Path(__file__).resolve().parents[2]
 OUTPUT_DIR = ROOT / "output"
 
@@ -25,9 +24,7 @@ PATTERN_MAP = {
 
 def load_capital_allocation() -> pd.DataFrame:
     if not CAPITAL_FILE.exists():
-        raise FileNotFoundError(
-            f"Missing file: {CAPITAL_FILE}"
-        )
+        raise FileNotFoundError(f"Missing file: {CAPITAL_FILE}")
 
     df = pd.read_csv(CAPITAL_FILE)
 
@@ -90,11 +87,7 @@ def classify_eight_pattern(row: pd.Series) -> str:
 def build_latest_patterns(capital: pd.DataFrame) -> pd.DataFrame:
     latest_year = capital["year"].max()
 
-    latest = (
-        capital[capital["year"] == latest_year]
-        .copy()
-        .sort_values("company_id")
-    )
+    latest = capital[capital["year"] == latest_year].copy().sort_values("company_id")
 
     latest["capital_allocation"] = latest.apply(
         classify_eight_pattern,
@@ -134,12 +127,8 @@ def build_pattern_changes(capital: pd.DataFrame) -> pd.DataFrame:
                 "previous_pattern": previous_pattern,
                 "latest_pattern": latest_pattern,
                 "pattern_changed": previous_pattern != latest_pattern,
-                "previous_pattern_code": previous.get(
-                    "pattern_code", None
-                ),
-                "latest_pattern_code": latest.get(
-                    "pattern_code", None
-                ),
+                "previous_pattern_code": previous.get("pattern_code", None),
+                "latest_pattern_code": latest.get("pattern_code", None),
             }
         )
 
@@ -152,9 +141,7 @@ def add_capital_allocation_to_cashflow(
 ) -> pd.DataFrame:
 
     if "company_id" not in cashflow.columns:
-        raise ValueError(
-            "cashflow_intelligence.xlsx must contain company_id"
-        )
+        raise ValueError("cashflow_intelligence.xlsx must contain company_id")
 
     allocation_map = latest_patterns[
         ["company_id", "capital_allocation"]
@@ -190,43 +177,28 @@ def validate_results(
     print(f"Latest-year companies: {latest_companies}")
 
     print("\nCompany coverage by year:")
-    coverage = (
-        capital.groupby("year")["company_id"]
-        .nunique()
-        .sort_index()
-    )
+    coverage = capital.groupby("year")["company_id"].nunique().sort_index()
     print(coverage.to_string())
 
     expected_companies = 92
 
     if total_companies != expected_companies:
-        raise ValueError(
-            f"Expected 92 companies, found {total_companies}"
-        )
+        raise ValueError(f"Expected 92 companies, found {total_companies}")
 
     if latest_companies != expected_companies:
         raise ValueError(
-            f"Latest year should contain 92 companies, "
-            f"found {latest_companies}"
+            f"Latest year should contain 92 companies, " f"found {latest_companies}"
         )
 
     print("\nLatest-year pattern distribution:")
-    print(
-        latest_patterns["capital_allocation"]
-        .value_counts(dropna=False)
-        .to_string()
-    )
+    print(latest_patterns["capital_allocation"].value_counts(dropna=False).to_string())
 
     print("\nCashflow intelligence rows:", len(cashflow))
 
     if "capital_allocation" not in cashflow.columns:
-        raise ValueError(
-            "capital_allocation column was not added"
-        )
+        raise ValueError("capital_allocation column was not added")
 
-    missing_allocations = int(
-        cashflow["capital_allocation"].isna().sum()
-    )
+    missing_allocations = int(cashflow["capital_allocation"].isna().sum())
 
     print(
         "Companies without capital allocation:",
@@ -248,16 +220,20 @@ def validate_results(
 
     print(
         "Pattern changes:",
-        int(pattern_changes["pattern_changed"].sum())
-        if not pattern_changes.empty
-        else 0,
+        (
+            int(pattern_changes["pattern_changed"].sum())
+            if not pattern_changes.empty
+            else 0
+        ),
     )
 
     print(
         "No pattern changes:",
-        int((~pattern_changes["pattern_changed"]).sum())
-        if not pattern_changes.empty
-        else 0,
+        (
+            int((~pattern_changes["pattern_changed"]).sum())
+            if not pattern_changes.empty
+            else 0
+        ),
     )
 
 
@@ -285,9 +261,7 @@ def main() -> None:
 
     # Read the Day 31 workbook.
     if not CASHFLOW_FILE.exists():
-        raise FileNotFoundError(
-            f"Missing file: {CASHFLOW_FILE}"
-        )
+        raise FileNotFoundError(f"Missing file: {CASHFLOW_FILE}")
 
     cashflow = pd.read_excel(CASHFLOW_FILE)
 
@@ -319,9 +293,7 @@ def main() -> None:
     print("\nSaved:")
     print(f"- {CASHFLOW_FILE}")
     print(f"- {PATTERN_CHANGES_FILE}")
-    print(
-        f"- {OUTPUT_DIR / 'capital_allocation_coverage.csv'}"
-    )
+    print(f"- {OUTPUT_DIR / 'capital_allocation_coverage.csv'}")
 
 
 if __name__ == "__main__":

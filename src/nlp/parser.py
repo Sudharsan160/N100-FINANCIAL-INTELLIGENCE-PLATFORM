@@ -8,7 +8,6 @@ import pandas as pd
 
 from src.analytics.cagr import calculate_cagr
 
-
 ROOT_DIR = Path(__file__).resolve().parents[2]
 ANALYSIS_PATH = ROOT_DIR / "data" / "raw" / "analysis.xlsx"
 DB_PATH = ROOT_DIR / "nifty100.db"
@@ -52,10 +51,7 @@ def load_analysis() -> pd.DataFrame:
             header=1,
         )
 
-    raw.columns = [
-        str(column).strip()
-        for column in raw.columns
-    ]
+    raw.columns = [str(column).strip() for column in raw.columns]
 
     required = [
         "company_id",
@@ -65,16 +61,10 @@ def load_analysis() -> pd.DataFrame:
         "roe",
     ]
 
-    missing = [
-        column
-        for column in required
-        if column not in raw.columns
-    ]
+    missing = [column for column in required if column not in raw.columns]
 
     if missing:
-        raise ValueError(
-            f"Missing required columns in analysis.xlsx: {missing}"
-        )
+        raise ValueError(f"Missing required columns in analysis.xlsx: {missing}")
 
     return raw[required].copy()
 
@@ -122,11 +112,7 @@ def parse_analysis() -> tuple[pd.DataFrame, pd.DataFrame]:
                         "company_id": company_id,
                         "metric_type": metric_type,
                         "source_column": source_column,
-                        "raw_text": (
-                            None
-                            if pd.isna(raw_text)
-                            else str(raw_text)
-                        ),
+                        "raw_text": (None if pd.isna(raw_text) else str(raw_text)),
                         "row_number": int(row_index) + 2,
                         "failure_reason": "Pattern not matched",
                     }
@@ -196,9 +182,7 @@ def computed_cagr_for_company(
       end   = latest year
     """
 
-    subset = history[
-        history["company_id"].astype(str) == str(company_id)
-    ].copy()
+    subset = history[history["company_id"].astype(str) == str(company_id)].copy()
 
     if subset.empty:
         return None
@@ -208,10 +192,7 @@ def computed_cagr_for_company(
         errors="coerce",
     )
 
-    subset = (
-        subset.dropna(subset=["year"])
-        .sort_values("year")
-    )
+    subset = subset.dropna(subset=["year"]).sort_values("year")
 
     if subset.empty:
         return None
@@ -219,13 +200,9 @@ def computed_cagr_for_company(
     latest_year = int(subset["year"].max())
     start_year = latest_year - int(period_years)
 
-    start_row = subset[
-        subset["year"] == start_year
-    ]
+    start_row = subset[subset["year"] == start_year]
 
-    end_row = subset[
-        subset["year"] == latest_year
-    ]
+    end_row = subset[subset["year"] == latest_year]
 
     if start_row.empty or end_row.empty:
         return None
@@ -256,13 +233,9 @@ def cross_validate(
 
     pl, _ = load_financial_history()
 
-    sales_history = pl[
-        ["company_id", "year", "sales"]
-    ].copy()
+    sales_history = pl[["company_id", "year", "sales"]].copy()
 
-    profit_history = pl[
-        ["company_id", "year", "net_profit"]
-    ].copy()
+    profit_history = pl[["company_id", "year", "net_profit"]].copy()
 
     comparison_rows: list[dict] = []
 
@@ -306,22 +279,13 @@ def cross_validate(
             )
             continue
 
-        absolute_difference = abs(
-            parsed_value - computed_value
-        )
+        absolute_difference = abs(parsed_value - computed_value)
 
         # Divergence expressed relative to the computed CAGR.
         if computed_value == 0:
-            divergence = (
-                0.0
-                if absolute_difference == 0
-                else float("inf")
-            )
+            divergence = 0.0 if absolute_difference == 0 else float("inf")
         else:
-            divergence = (
-                absolute_difference
-                / abs(computed_value)
-            ) * 100.0
+            divergence = (absolute_difference / abs(computed_value)) * 100.0
 
         manual_review = divergence > 5.0
 
@@ -333,9 +297,7 @@ def cross_validate(
                 "divergence_pct": divergence,
                 "manual_review": manual_review,
                 "validation_status": (
-                    "Divergence > 5%"
-                    if manual_review
-                    else "Validated"
+                    "Divergence > 5%" if manual_review else "Validated"
                 ),
             }
         )
@@ -403,22 +365,16 @@ def main() -> None:
     print(f"Parse failures: {len(failures)}")
 
     if not validation.empty:
-        comparable = validation[
-            validation["validation_status"] != "Not comparable"
-        ]
+        comparable = validation[validation["validation_status"] != "Not comparable"]
 
-        review = validation[
-            validation["manual_review"] == True
-        ]
+        review = validation[validation["manual_review"] == True]
 
         print(f"Comparable CAGR rows: {len(comparable)}")
         print(f"Rows needing manual review (>5%): {len(review)}")
 
     print(f"\nSaved: {PARSED_PATH}")
     print(f"Saved: {FAILURES_PATH}")
-    print(
-        f"Saved: {OUTPUT_DIR / 'analysis_cagr_validation.csv'}"
-    )
+    print(f"Saved: {OUTPUT_DIR / 'analysis_cagr_validation.csv'}")
 
 
 if __name__ == "__main__":

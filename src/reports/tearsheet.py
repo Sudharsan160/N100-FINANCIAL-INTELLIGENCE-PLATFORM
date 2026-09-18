@@ -1,17 +1,16 @@
-from pathlib import Path
 import argparse
 import math
 import sqlite3
 import textwrap
+from pathlib import Path
 
 import pandas as pd
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase.pdfmetrics import stringWidth
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
-
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -57,7 +56,7 @@ if WINDOWS_REGULAR.exists() and WINDOWS_BOLD.exists():
 
         print("Using embedded Arial fonts.")
 
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         print(f"Arial embedding failed: {exc}")
         print("Falling back to Helvetica.")
 
@@ -81,6 +80,7 @@ GREY_BLUE = colors.HexColor("#7C8FA6")
 # ---------------------------------------------------------
 # HELPERS
 # ---------------------------------------------------------
+
 
 def safe_float(value):
     try:
@@ -138,6 +138,7 @@ def fmt_year_label(value):
 # TEXT
 # ---------------------------------------------------------
 
+
 def draw_wrapped_text(
     c,
     text,
@@ -169,17 +170,16 @@ def draw_wrapped_text(
     current = ""
 
     for word in words:
-        candidate = (
-            word
-            if not current
-            else current + " " + word
-        )
+        candidate = word if not current else current + " " + word
 
-        if stringWidth(
-            candidate,
-            font,
-            size,
-        ) <= max_width:
+        if (
+            stringWidth(
+                candidate,
+                font,
+                size,
+            )
+            <= max_width
+        ):
             current = candidate
         else:
             if current:
@@ -200,6 +200,7 @@ def draw_wrapped_text(
 # ---------------------------------------------------------
 # BASIC DRAWING
 # ---------------------------------------------------------
+
 
 def draw_box(
     c,
@@ -319,6 +320,7 @@ def section_title(c, text, x, y):
 # KPI TILE
 # ---------------------------------------------------------
 
+
 def draw_kpi_tile(
     c,
     x,
@@ -364,7 +366,8 @@ def draw_kpi_tile(
             display,
             FONT_BOLD,
             15,
-        ) > w - 16
+        )
+        > w - 16
         and len(display) > 5
     ):
         display = display[:-1]
@@ -379,6 +382,7 @@ def draw_kpi_tile(
 # ---------------------------------------------------------
 # BAR CHART
 # ---------------------------------------------------------
+
 
 def draw_bar_chart(
     c,
@@ -461,11 +465,7 @@ def draw_bar_chart(
 
     for i, label in enumerate(labels):
 
-        base_x = (
-            chart_left
-            + i * group_w
-            + group_w / 2
-        )
+        base_x = chart_left + i * group_w + group_w / 2
 
         a = safe_float(values_a[i])
         b = safe_float(values_b[i])
@@ -476,9 +476,7 @@ def draw_bar_chart(
                 a / max_value * chart_h,
             )
 
-            c.setFillColor(
-                LIGHT_NAVY
-            )
+            c.setFillColor(LIGHT_NAVY)
 
             c.rect(
                 base_x - bar_w - 2,
@@ -495,9 +493,7 @@ def draw_bar_chart(
                 b / max_value * chart_h,
             )
 
-            c.setFillColor(
-                GREY_BLUE
-            )
+            c.setFillColor(GREY_BLUE)
 
             c.rect(
                 base_x + 2,
@@ -570,6 +566,7 @@ def draw_bar_chart(
 # LINE CHART
 # ---------------------------------------------------------
 
+
 def draw_line_chart(
     c,
     x,
@@ -595,22 +592,11 @@ def draw_line_chart(
     chart_w = w - 48
     chart_h = h - 55
 
-    parsed_a = [
-        safe_float(v)
-        for v in values_a
-    ]
+    parsed_a = [safe_float(v) for v in values_a]
 
-    parsed_b = [
-        safe_float(v)
-        for v in values_b
-    ]
+    parsed_b = [safe_float(v) for v in values_b]
 
-    all_values = [
-        v
-        for v in parsed_a + parsed_b
-        if v is not None
-        and math.isfinite(v)
-    ]
+    all_values = [v for v in parsed_a + parsed_b if v is not None and math.isfinite(v)]
 
     if not all_values:
         c.setFillColor(MID_GREY)
@@ -645,23 +631,9 @@ def draw_line_chart(
 
     def point(index, value):
 
-        px = (
-            chart_left
-            + (
-                index
-                / max(len(labels) - 1, 1)
-            )
-            * chart_w
-        )
+        px = chart_left + (index / max(len(labels) - 1, 1)) * chart_w
 
-        py = (
-            chart_bottom
-            + (
-                (value - low)
-                / (high - low)
-            )
-            * chart_h
-        )
+        py = chart_bottom + ((value - low) / (high - low)) * chart_h
 
         return px, py
 
@@ -727,14 +699,7 @@ def draw_line_chart(
 
     for i, label in enumerate(labels):
 
-        px = (
-            chart_left
-            + (
-                i
-                / max(len(labels) - 1, 1)
-            )
-            * chart_w
-        )
+        px = chart_left + (i / max(len(labels) - 1, 1)) * chart_w
 
         c.setFillColor(MID_GREY)
 
@@ -798,6 +763,7 @@ def draw_line_chart(
 # BALANCE SHEET COMPOSITION
 # ---------------------------------------------------------
 
+
 def draw_horizontal_composition(
     c,
     x,
@@ -831,10 +797,7 @@ def draw_horizontal_composition(
                 )
             )
 
-    total = sum(
-        v
-        for _, v in valid
-    )
+    total = sum(v for _, v in valid)
 
     if total <= 0:
 
@@ -870,17 +833,9 @@ def draw_horizontal_composition(
 
     for i, (label, value) in enumerate(valid):
 
-        seg_w = (
-            bar_w
-            * value
-            / total
-        )
+        seg_w = bar_w * value / total
 
-        c.setFillColor(
-            segment_colors[
-                i % len(segment_colors)
-            ]
-        )
+        c.setFillColor(segment_colors[i % len(segment_colors)])
 
         c.rect(
             current_x,
@@ -897,11 +852,7 @@ def draw_horizontal_composition(
 
     for i, (label, value) in enumerate(valid):
 
-        c.setFillColor(
-            segment_colors[
-                i % len(segment_colors)
-            ]
-        )
+        c.setFillColor(segment_colors[i % len(segment_colors)])
 
         c.rect(
             x + 18,
@@ -924,11 +875,7 @@ def draw_horizontal_composition(
         c.drawString(
             x + 30,
             text_y,
-            (
-                f"{label}: "
-                f"{fmt_number(value)} Cr "
-                f"({pct:.1f}%)"
-            ),
+            (f"{label}: " f"{fmt_number(value)} Cr " f"({pct:.1f}%)"),
         )
 
         text_y -= 13
@@ -937,6 +884,7 @@ def draw_horizontal_composition(
 # ---------------------------------------------------------
 # CASH FLOW WATERFALL
 # ---------------------------------------------------------
+
 
 def draw_cashflow_waterfall(
     c,
@@ -971,11 +919,7 @@ def draw_cashflow_waterfall(
         ),
     ]
 
-    valid = [
-        value
-        for _, value in values
-        if value is not None
-    ]
+    valid = [value for _, value in values if value is not None]
 
     if not valid:
 
@@ -994,10 +938,7 @@ def draw_cashflow_waterfall(
 
         return
 
-    max_abs = max(
-        abs(value)
-        for value in valid
-    )
+    max_abs = max(abs(value) for value in valid)
 
     if max_abs == 0:
         max_abs = 1
@@ -1007,10 +948,7 @@ def draw_cashflow_waterfall(
     chart_w = w - 55
     chart_h = h - 65
 
-    zero_y = (
-        chart_bottom
-        + chart_h / 2
-    )
+    zero_y = chart_bottom + chart_h / 2
 
     c.setStrokeColor(BORDER)
 
@@ -1028,19 +966,11 @@ def draw_cashflow_waterfall(
         if value is None:
             continue
 
-        bar_x = (
-            chart_left
-            + i * step
-            + step * 0.25
-        )
+        bar_x = chart_left + i * step + step * 0.25
 
         bar_w = step * 0.5
 
-        bar_h = (
-            abs(value)
-            / max_abs
-            * (chart_h / 2 - 5)
-        )
+        bar_h = abs(value) / max_abs * (chart_h / 2 - 5)
 
         if value >= 0:
             bar_y = zero_y
@@ -1066,11 +996,7 @@ def draw_cashflow_waterfall(
             7,
         )
 
-        text_y = (
-            bar_y + bar_h + 5
-            if value >= 0
-            else bar_y - 10
-        )
+        text_y = bar_y + bar_h + 5 if value >= 0 else bar_y - 10
 
         c.drawCentredString(
             bar_x + bar_w / 2,
@@ -1094,6 +1020,7 @@ def draw_cashflow_waterfall(
 # DATABASE
 # ---------------------------------------------------------
 
+
 def get_company_id(
     conn,
     ticker,
@@ -1115,9 +1042,7 @@ def get_company_id(
     ).fetchone()
 
     if row is None:
-        raise ValueError(
-            f"Company not found: {ticker}"
-        )
+        raise ValueError(f"Company not found: {ticker}")
 
     return (
         row[0],
@@ -1128,13 +1053,9 @@ def get_company_id(
 def load_company_data(ticker):
 
     if not DB_PATH.exists():
-        raise FileNotFoundError(
-            f"Database not found: {DB_PATH}"
-        )
+        raise FileNotFoundError(f"Database not found: {DB_PATH}")
 
-    conn = sqlite3.connect(
-        DB_PATH
-    )
+    conn = sqlite3.connect(DB_PATH)
 
     try:
 
@@ -1215,16 +1136,10 @@ def load_company_data(ticker):
         company_row = company.iloc[0]
 
     else:
-        company_row = pd.Series(
-            dtype=object
-        )
+        company_row = pd.Series(dtype=object)
 
     sector = (
-        str(
-            sectors.iloc[0][
-                "broad_sector"
-            ]
-        )
+        str(sectors.iloc[0]["broad_sector"])
         if not sectors.empty
         else "Sector unavailable"
     )
@@ -1245,41 +1160,28 @@ def load_company_data(ticker):
 # INPUT FILES
 # ---------------------------------------------------------
 
+
 def load_pros_cons(company_id):
 
     if not PROS_CONS_FILE.exists():
         return pd.DataFrame()
 
-    df = pd.read_csv(
-        PROS_CONS_FILE
-    )
+    df = pd.read_csv(PROS_CONS_FILE)
 
-    return df[
-        df["company_id"].astype(str)
-        == str(company_id)
-    ].copy()
+    return df[df["company_id"].astype(str) == str(company_id)].copy()
 
 
 def load_cashflow_intelligence(company_id):
 
     if not CASHFLOW_FILE.exists():
-        return pd.Series(
-            dtype=object
-        )
+        return pd.Series(dtype=object)
 
-    df = pd.read_excel(
-        CASHFLOW_FILE
-    )
+    df = pd.read_excel(CASHFLOW_FILE)
 
-    rows = df[
-        df["company_id"].astype(str)
-        == str(company_id)
-    ]
+    rows = df[df["company_id"].astype(str) == str(company_id)]
 
     if rows.empty:
-        return pd.Series(
-            dtype=object
-        )
+        return pd.Series(dtype=object)
 
     return rows.iloc[0]
 
@@ -1287,54 +1189,37 @@ def load_cashflow_intelligence(company_id):
 def load_latest_capital_allocation(company_id):
 
     if not CAPITAL_FILE.exists():
-        return pd.Series(
-            dtype=object
-        )
+        return pd.Series(dtype=object)
 
-    df = pd.read_csv(
-        CAPITAL_FILE
-    )
+    df = pd.read_csv(CAPITAL_FILE)
 
-    df = df[
-        df["company_id"].astype(str)
-        == str(company_id)
-    ].copy()
+    df = df[df["company_id"].astype(str) == str(company_id)].copy()
 
     if df.empty:
-        return pd.Series(
-            dtype=object
-        )
+        return pd.Series(dtype=object)
 
     df["year"] = pd.to_numeric(
         df["year"],
         errors="coerce",
     )
 
-    df = df.dropna(
-        subset=["year"]
-    )
+    df = df.dropna(subset=["year"])
 
     if df.empty:
-        return pd.Series(
-            dtype=object
-        )
+        return pd.Series(dtype=object)
 
-    return (
-        df.sort_values("year")
-        .iloc[-1]
-    )
+    return df.sort_values("year").iloc[-1]
 
 
 # ---------------------------------------------------------
 # DATA HELPERS
 # ---------------------------------------------------------
 
+
 def get_latest_ratio(ratios):
 
     if ratios.empty:
-        return pd.Series(
-            dtype=object
-        )
+        return pd.Series(dtype=object)
 
     temp = ratios.copy()
 
@@ -1343,31 +1228,22 @@ def get_latest_ratio(ratios):
         errors="coerce",
     )
 
-    temp = temp.dropna(
-        subset=["year"]
-    )
+    temp = temp.dropna(subset=["year"])
 
     if temp.empty:
         return ratios.iloc[-1]
 
-    return (
-        temp.sort_values("year")
-        .iloc[-1]
-    )
+    return temp.sort_values("year").iloc[-1]
 
 
 def get_latest_year(ratios):
 
-    latest = get_latest_ratio(
-        ratios
-    )
+    latest = get_latest_ratio(ratios)
 
     if latest.empty:
         return None
 
-    return safe_float(
-        latest.get("year")
-    )
+    return safe_float(latest.get("year"))
 
 
 def get_revenue_cagr(ratios):
@@ -1379,14 +1255,10 @@ def get_revenue_cagr(ratios):
 
     if col in ratios.columns:
 
-        valid = ratios[
-            col
-        ].dropna()
+        valid = ratios[col].dropna()
 
         if not valid.empty:
-            return safe_float(
-                valid.iloc[-1]
-            )
+            return safe_float(valid.iloc[-1])
 
     return None
 
@@ -1395,62 +1267,37 @@ def get_revenue_cagr(ratios):
 # PAGE 1
 # ---------------------------------------------------------
 
+
 def draw_page_one(
     c,
     data,
     pros_cons,
 ):
-    company_name = data[
-        "company_name"
-    ]
+    company_name = data["company_name"]
 
-    ticker = str(
-        data["company_id"]
-    )
+    ticker = str(data["company_id"])
 
-    sector = data[
-        "sector"
-    ]
+    sector = data["sector"]
 
-    ratios = data[
-        "ratios"
-    ]
+    ratios = data["ratios"]
 
-    pnl = data[
-        "pnl"
-    ]
+    pnl = data["pnl"]
 
-    latest = get_latest_ratio(
-        ratios
-    )
+    latest = get_latest_ratio(ratios)
 
-    latest_year = get_latest_year(
-        ratios
-    )
+    latest_year = get_latest_year(ratios)
 
-    roe = latest.get(
-        "return_on_equity_pct"
-    )
+    roe = latest.get("return_on_equity_pct")
 
-    roce = latest.get(
-        "roce_pct"
-    )
+    roce = latest.get("roce_pct")
 
-    npm = latest.get(
-        "net_profit_margin_pct"
-    )
+    npm = latest.get("net_profit_margin_pct")
 
-    debt_equity = latest.get(
-        "debt_to_equity"
-    )
+    debt_equity = latest.get("debt_to_equity")
 
-    revenue_cagr = get_revenue_cagr(
-        ratios
-    )
+    revenue_cagr = get_revenue_cagr(ratios)
 
-    fcf = latest.get(
-        "free_cash_flow_cr"
-    )
+    fcf = latest.get("free_cash_flow_cr")
 
     draw_header(
         c,
@@ -1472,11 +1319,7 @@ def draw_page_one(
         PAGE_H - 103,
         (
             "Latest financial year: "
-            + (
-                fmt_year_label(latest_year)
-                if latest_year is not None
-                else "N/A"
-            )
+            + (fmt_year_label(latest_year) if latest_year is not None else "N/A")
         ),
     )
 
@@ -1485,11 +1328,7 @@ def draw_page_one(
 
     gap = 8
 
-    tile_w = (
-        PAGE_W
-        - 72
-        - gap * 2
-    ) / 3
+    tile_w = (PAGE_W - 72 - gap * 2) / 3
 
     tile_h = 54
 
@@ -1586,11 +1425,7 @@ def draw_page_one(
             errors="coerce",
         )
 
-        pnl_plot = (
-            pnl_plot
-            .dropna(subset=["year"])
-            .tail(8)
-        )
+        pnl_plot = pnl_plot.dropna(subset=["year"]).tail(8)
 
     draw_bar_chart(
         c,
@@ -1598,27 +1433,9 @@ def draw_page_one(
         chart_y - 145,
         250,
         140,
-        (
-            pnl_plot[
-                "year"
-            ].tolist()
-            if not pnl_plot.empty
-            else []
-        ),
-        (
-            pnl_plot[
-                "sales"
-            ].tolist()
-            if not pnl_plot.empty
-            else []
-        ),
-        (
-            pnl_plot[
-                "net_profit"
-            ].tolist()
-            if not pnl_plot.empty
-            else []
-        ),
+        (pnl_plot["year"].tolist() if not pnl_plot.empty else []),
+        (pnl_plot["sales"].tolist() if not pnl_plot.empty else []),
+        (pnl_plot["net_profit"].tolist() if not pnl_plot.empty else []),
         "Revenue",
         "Net Profit",
     )
@@ -1639,11 +1456,7 @@ def draw_page_one(
             errors="coerce",
         )
 
-        ratio_plot = (
-            ratio_plot
-            .dropna(subset=["year"])
-            .tail(8)
-        )
+        ratio_plot = ratio_plot.dropna(subset=["year"]).tail(8)
 
     draw_line_chart(
         c,
@@ -1651,29 +1464,13 @@ def draw_page_one(
         chart_y - 145,
         PAGE_W - 343,
         140,
+        (ratio_plot["year"].tolist() if not ratio_plot.empty else []),
         (
-            ratio_plot[
-                "year"
-            ].tolist()
-            if not ratio_plot.empty
+            ratio_plot["return_on_equity_pct"].tolist()
+            if "return_on_equity_pct" in ratio_plot.columns
             else []
         ),
-        (
-            ratio_plot[
-                "return_on_equity_pct"
-            ].tolist()
-            if "return_on_equity_pct"
-            in ratio_plot.columns
-            else []
-        ),
-        (
-            ratio_plot[
-                "roce_pct"
-            ].tolist()
-            if "roce_pct"
-            in ratio_plot.columns
-            else []
-        ),
+        (ratio_plot["roce_pct"].tolist() if "roce_pct" in ratio_plot.columns else []),
         "ROE %",
         "ROCE %",
     )
@@ -1688,20 +1485,14 @@ def draw_page_one(
         info_y + 10,
     )
 
-    about = data[
-        "company"
-    ].get(
+    about = data["company"].get(
         "about_company",
         None,
     )
 
     y = draw_wrapped_text(
         c,
-        (
-            about
-            if pd.notna(about)
-            else "Company description unavailable."
-        ),
+        (about if pd.notna(about) else "Company description unavailable."),
         36,
         info_y - 10,
         PAGE_W - 72,
@@ -1715,10 +1506,7 @@ def draw_page_one(
     if not pros_cons.empty:
 
         pros = pros_cons[
-            pros_cons["type"]
-            .astype(str)
-            .str.lower()
-            == "pro"
+            pros_cons["type"].astype(str).str.lower() == "pro"
         ].sort_values(
             "confidence_pct",
             ascending=False,
@@ -1779,6 +1567,7 @@ def draw_page_one(
 # CAPITAL ALLOCATION BADGE
 # ---------------------------------------------------------
 
+
 def draw_pattern_badge(
     c,
     x,
@@ -1823,9 +1612,7 @@ def draw_pattern_badge(
         11,
     )
 
-    start_y = (
-        y + h / 2 + 5
-    )
+    start_y = y + h / 2 + 5
 
     for line in wrapped[:3]:
 
@@ -1841,6 +1628,7 @@ def draw_pattern_badge(
 # ---------------------------------------------------------
 # BULLETS
 # ---------------------------------------------------------
+
 
 def draw_bullets(
     c,
@@ -1900,6 +1688,7 @@ def draw_bullets(
 # PAGE 2
 # ---------------------------------------------------------
 
+
 def draw_page_two(
     c,
     data,
@@ -1907,25 +1696,15 @@ def draw_page_two(
     intelligence,
     capital_latest,
 ):
-    company_name = data[
-        "company_name"
-    ]
+    company_name = data["company_name"]
 
-    ticker = str(
-        data["company_id"]
-    )
+    ticker = str(data["company_id"])
 
-    sector = data[
-        "sector"
-    ]
+    sector = data["sector"]
 
-    balance = data[
-        "balance"
-    ]
+    balance = data["balance"]
 
-    cashflow = data[
-        "cashflow"
-    ]
+    cashflow = data["cashflow"]
 
     draw_header(
         c,
@@ -1957,18 +1736,10 @@ def draw_page_two(
     ]
 
     balance_values = [
-        latest_balance.get(
-            "fixed_assets"
-        ),
-        latest_balance.get(
-            "cwip"
-        ),
-        latest_balance.get(
-            "investments"
-        ),
-        latest_balance.get(
-            "other_asset"
-        ),
+        latest_balance.get("fixed_assets"),
+        latest_balance.get("cwip"),
+        latest_balance.get("investments"),
+        latest_balance.get("other_asset"),
     ]
 
     draw_horizontal_composition(
@@ -2001,15 +1772,9 @@ def draw_page_two(
         PAGE_H - 270,
         PAGE_W - 343,
         145,
-        latest_cf.get(
-            "operating_activity"
-        ),
-        latest_cf.get(
-            "investing_activity"
-        ),
-        latest_cf.get(
-            "financing_activity"
-        ),
+        latest_cf.get("operating_activity"),
+        latest_cf.get("investing_activity"),
+        latest_cf.get("financing_activity"),
     )
 
     # Pros / Cons
@@ -2031,38 +1796,26 @@ def draw_page_two(
     if not pros_cons.empty:
 
         pros_df = pros_cons[
-            pros_cons["type"]
-            .astype(str)
-            .str.lower()
-            == "pro"
+            pros_cons["type"].astype(str).str.lower() == "pro"
         ].sort_values(
             "confidence_pct",
             ascending=False,
         )
 
         cons_df = pros_cons[
-            pros_cons["type"]
-            .astype(str)
-            .str.lower()
-            == "con"
+            pros_cons["type"].astype(str).str.lower() == "con"
         ].sort_values(
             "confidence_pct",
             ascending=False,
         )
 
         pros = [
-            (
-                f"{row['text']} "
-                f"({fmt_pct(row['confidence_pct'])} confidence)"
-            )
+            (f"{row['text']} " f"({fmt_pct(row['confidence_pct'])} confidence)")
             for _, row in pros_df.head(4).iterrows()
         ]
 
         cons = [
-            (
-                f"{row['text']} "
-                f"({fmt_pct(row['confidence_pct'])} confidence)"
-            )
+            (f"{row['text']} " f"({fmt_pct(row['confidence_pct'])} confidence)")
             for _, row in cons_df.head(4).iterrows()
         ]
 
@@ -2150,9 +1903,7 @@ def draw_page_two(
             ),
         )
 
-        if pd.isna(
-            allocation_label
-        ):
+        if pd.isna(allocation_label):
             allocation_label = "Data Unavailable"
 
     if not capital_latest.empty:
@@ -2187,43 +1938,19 @@ def draw_page_two(
     fields = [
         (
             "CFO Quality",
-            (
-                intelligence.get(
-                    "cfo_quality_label"
-                )
-                if not intelligence.empty
-                else None
-            ),
+            (intelligence.get("cfo_quality_label") if not intelligence.empty else None),
         ),
         (
             "CapEx",
-            (
-                intelligence.get(
-                    "capex_label"
-                )
-                if not intelligence.empty
-                else None
-            ),
+            (intelligence.get("capex_label") if not intelligence.empty else None),
         ),
         (
             "Distress",
-            (
-                intelligence.get(
-                    "distress_flag"
-                )
-                if not intelligence.empty
-                else None
-            ),
+            (intelligence.get("distress_flag") if not intelligence.empty else None),
         ),
         (
             "Deleveraging",
-            (
-                intelligence.get(
-                    "deleveraging_flag"
-                )
-                if not intelligence.empty
-                else None
-            ),
+            (intelligence.get("deleveraging_flag") if not intelligence.empty else None),
         ),
     ]
 
@@ -2252,12 +1979,7 @@ def draw_page_two(
             9,
         )
 
-        display = (
-            "N/A"
-            if value is None
-            or pd.isna(value)
-            else str(value)
-        )
+        display = "N/A" if value is None or pd.isna(value) else str(value)
 
         c.drawString(
             ix,
@@ -2287,23 +2009,16 @@ def draw_page_two(
 # GENERATE ONE TEARSHEET
 # ---------------------------------------------------------
 
+
 def generate_tearsheet(ticker):
 
-    data = load_company_data(
-        ticker
-    )
+    data = load_company_data(ticker)
 
-    pros_cons = load_pros_cons(
-        data["company_id"]
-    )
+    pros_cons = load_pros_cons(data["company_id"])
 
-    intelligence = load_cashflow_intelligence(
-        data["company_id"]
-    )
+    intelligence = load_cashflow_intelligence(data["company_id"])
 
-    capital_latest = load_latest_capital_allocation(
-        data["company_id"]
-    )
+    capital_latest = load_latest_capital_allocation(data["company_id"])
 
     OUTPUT_DIR.mkdir(
         parents=True,
@@ -2311,16 +2026,10 @@ def generate_tearsheet(ticker):
     )
 
     safe_name = (
-        str(data["company_id"])
-        .replace("/", "_")
-        .replace("\\", "_")
-        .replace(" ", "_")
+        str(data["company_id"]).replace("/", "_").replace("\\", "_").replace(" ", "_")
     )
 
-    output_file = (
-        OUTPUT_DIR
-        / f"{safe_name}.pdf"
-    )
+    output_file = OUTPUT_DIR / f"{safe_name}.pdf"
 
     c = canvas.Canvas(
         str(output_file),
@@ -2328,12 +2037,7 @@ def generate_tearsheet(ticker):
         pageCompression=1,
     )
 
-    c.setTitle(
-        (
-            f"{data['company_name']} "
-            f"- Financial Tearsheet"
-        )
-    )
+    c.setTitle(f"{data['company_name']} " f"- Financial Tearsheet")
 
     draw_page_one(
         c,
@@ -2358,13 +2062,11 @@ def generate_tearsheet(ticker):
 # MAIN
 # ---------------------------------------------------------
 
+
 def main():
 
     parser = argparse.ArgumentParser(
-        description=(
-            "Generate 2-page "
-            "Nifty 100 company tearsheets."
-        )
+        description=("Generate 2-page " "Nifty 100 company tearsheets.")
     )
 
     parser.add_argument(
@@ -2389,27 +2091,19 @@ def main():
             "ONGC",
         ]
 
-    print(
-        "Generating tearsheets...\n"
-    )
+    print("Generating tearsheets...\n")
 
     for ticker in companies:
 
         try:
 
-            output = generate_tearsheet(
-                ticker
-            )
+            output = generate_tearsheet(ticker)
 
-            print(
-                f"[OK] {ticker}: {output}"
-            )
+            print(f"[OK] {ticker}: {output}")
 
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
 
-            print(
-                f"[ERROR] {ticker}: {exc}"
-            )
+            print(f"[ERROR] {ticker}: {exc}")
 
     print("\nDone.")
 

@@ -6,7 +6,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 DB_PATH = PROJECT_ROOT / "nifty100.db"
@@ -39,9 +38,7 @@ class PeerPercentileEngine:
         self.peer_groups_path = Path(peer_groups_path)
 
         if not self.db_path.exists():
-            raise FileNotFoundError(
-                f"Database not found: {self.db_path}"
-            )
+            raise FileNotFoundError(f"Database not found: {self.db_path}")
 
         if not self.peer_groups_path.exists():
             raise FileNotFoundError(
@@ -55,9 +52,7 @@ class PeerPercentileEngine:
     def load_peer_groups(self) -> pd.DataFrame:
         """Load peer group assignments from Excel."""
 
-        df = pd.read_excel(
-            self.peer_groups_path
-        )
+        df = pd.read_excel(self.peer_groups_path)
 
         required = {
             "peer_group_name",
@@ -68,9 +63,7 @@ class PeerPercentileEngine:
         missing = required - set(df.columns)
 
         if missing:
-            raise KeyError(
-                f"Missing peer group columns: {sorted(missing)}"
-            )
+            raise KeyError(f"Missing peer group columns: {sorted(missing)}")
 
         df = df[
             [
@@ -80,17 +73,9 @@ class PeerPercentileEngine:
             ]
         ].copy()
 
-        df["company_id"] = (
-            df["company_id"]
-            .astype(str)
-            .str.strip()
-        )
+        df["company_id"] = df["company_id"].astype(str).str.strip()
 
-        df["peer_group_name"] = (
-            df["peer_group_name"]
-            .astype(str)
-            .str.strip()
-        )
+        df["peer_group_name"] = df["peer_group_name"].astype(str).str.strip()
 
         return df
 
@@ -164,8 +149,7 @@ class PeerPercentileEngine:
         # --------------------------------------------------------
 
         latest = (
-            ratios
-            .sort_values(
+            ratios.sort_values(
                 [
                     "company_id",
                     "year",
@@ -275,9 +259,7 @@ class PeerPercentileEngine:
             sort=False,
         ):
 
-            group = group.sort_values(
-                "year"
-            ).set_index("year")
+            group = group.sort_values("year").set_index("year")
 
             for end_year in group.index:
 
@@ -302,14 +284,7 @@ class PeerPercentileEngine:
                 if start_value <= 0 or end_value <= 0:
                     continue
 
-                cagr = (
-                    (
-                        end_value
-                        / start_value
-                    )
-                    ** (1.0 / years)
-                    - 1.0
-                ) * 100.0
+                cagr = ((end_value / start_value) ** (1.0 / years) - 1.0) * 100.0
 
                 rows.append(
                     {
@@ -366,10 +341,7 @@ class PeerPercentileEngine:
             ascending=True,
         )
 
-        result.loc[valid] = (
-            (ranks - 1)
-            / (n - 1)
-        )
+        result.loc[valid] = (ranks - 1) / (n - 1)
 
         return result
 
@@ -395,9 +367,7 @@ class PeerPercentileEngine:
         # --------------------------------------------------------
 
         if merged.empty:
-            print(
-                "No peer group assigned"
-            )
+            print("No peer group assigned")
             return pd.DataFrame(
                 columns=[
                     "company_id",
@@ -416,10 +386,7 @@ class PeerPercentileEngine:
             sort=True,
         ):
 
-            print(
-                f"Processing peer group: "
-                f"{peer_group_name}"
-            )
+            print(f"Processing peer group: " f"{peer_group_name}")
 
             for metric_name, column_name in METRIC_COLUMNS.items():
 
@@ -431,18 +398,9 @@ class PeerPercentileEngine:
                 # D/E:
                 # lower is better.
                 if metric_name == "D/E":
-                    percentile = (
-                        1.0
-                        - self._percent_rank(
-                            values
-                        )
-                    )
+                    percentile = 1.0 - self._percent_rank(values)
                 else:
-                    percentile = (
-                        self._percent_rank(
-                            values
-                        )
-                    )
+                    percentile = self._percent_rank(values)
 
                 for idx in group.index:
 
@@ -457,15 +415,9 @@ class PeerPercentileEngine:
                             ],
                             "peer_group_name": peer_group_name,
                             "metric": metric_name,
-                            "value": (
-                                float(value)
-                                if pd.notna(value)
-                                else None
-                            ),
+                            "value": (float(value) if pd.notna(value) else None),
                             "percentile_rank": (
-                                float(rank)
-                                if pd.notna(rank)
-                                else None
+                                float(rank) if pd.notna(rank) else None
                             ),
                             "year": (
                                 int(
@@ -485,9 +437,7 @@ class PeerPercentileEngine:
                         }
                     )
 
-        result = pd.DataFrame(
-            output_rows
-        )
+        result = pd.DataFrame(output_rows)
 
         return result
 
@@ -501,15 +451,11 @@ class PeerPercentileEngine:
     ) -> None:
         """Create/replace peer_percentiles table."""
 
-        with sqlite3.connect(
-            self.db_path
-        ) as conn:
+        with sqlite3.connect(self.db_path) as conn:
 
-            conn.execute(
-                """
+            conn.execute("""
                 DROP TABLE IF EXISTS peer_percentiles
-                """
-            )
+                """)
 
             percentile_df.to_sql(
                 "peer_percentiles",
@@ -525,48 +471,30 @@ class PeerPercentileEngine:
     def run(self) -> pd.DataFrame:
         """Run the complete Day 18 pipeline."""
 
-        print(
-            "Loading peer groups..."
-        )
+        print("Loading peer groups...")
 
         peers = self.load_peer_groups()
 
-        print(
-            f"Peer assignments: {len(peers)}"
-        )
+        print(f"Peer assignments: {len(peers)}")
 
-        print(
-            "Loading financial data..."
-        )
+        print("Loading financial data...")
 
-        financial = (
-            self.load_financial_data()
-        )
+        financial = self.load_financial_data()
 
-        print(
-            f"Financial rows: {len(financial)}"
-        )
+        print(f"Financial rows: {len(financial)}")
 
-        print(
-            "Computing percentile rankings..."
-        )
+        print("Computing percentile rankings...")
 
         result = self.compute_percentiles(
             financial,
             peers,
         )
 
-        print(
-            f"Percentile rows: {len(result)}"
-        )
+        print(f"Percentile rows: {len(result)}")
 
-        self.save_to_sqlite(
-            result
-        )
+        self.save_to_sqlite(result)
 
-        print(
-            "peer_percentiles table created."
-        )
+        print("peer_percentiles table created.")
 
         return result
 
@@ -577,11 +505,7 @@ def main():
     result = engine.run()
 
     print("\nSample results:")
-    print(
-        result.head(20).to_string(
-            index=False
-        )
-    )
+    print(result.head(20).to_string(index=False))
 
 
 if __name__ == "__main__":

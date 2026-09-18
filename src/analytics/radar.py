@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 DB_PATH = PROJECT_ROOT / "nifty100.db"
@@ -41,9 +40,7 @@ def calculate_cagr(
     if start_value <= 0 or end_value <= 0:
         return np.nan
 
-    return (
-        (end_value / start_value) ** (1 / years) - 1
-    ) * 100
+    return ((end_value / start_value) ** (1 / years) - 1) * 100
 
 
 def calculate_history_cagr(
@@ -55,9 +52,7 @@ def calculate_history_cagr(
 
     rows = []
 
-    data = history[
-        ["company_id", "year", value_column]
-    ].copy()
+    data = history[["company_id", "year", value_column]].copy()
 
     data["year"] = pd.to_numeric(
         data["year"],
@@ -89,11 +84,7 @@ def calculate_history_cagr(
         "company_id",
         sort=False,
     ):
-        group = (
-            group
-            .sort_values("year")
-            .set_index("year")
-        )
+        group = group.sort_values("year").set_index("year")
 
         for end_year in group.index:
 
@@ -136,18 +127,12 @@ def load_data():
     """Load latest metrics, peer groups and composite scores."""
 
     if not PEER_GROUPS_PATH.exists():
-        raise FileNotFoundError(
-            f"Peer groups not found: {PEER_GROUPS_PATH}"
-        )
+        raise FileNotFoundError(f"Peer groups not found: {PEER_GROUPS_PATH}")
 
     if not COMPOSITE_PATH.exists():
-        raise FileNotFoundError(
-            f"Composite scores not found: {COMPOSITE_PATH}"
-        )
+        raise FileNotFoundError(f"Composite scores not found: {COMPOSITE_PATH}")
 
-    peers = pd.read_excel(
-        PEER_GROUPS_PATH
-    )
+    peers = pd.read_excel(PEER_GROUPS_PATH)
 
     with sqlite3.connect(DB_PATH) as conn:
 
@@ -215,8 +200,7 @@ def load_data():
     # --------------------------------------------------------
 
     latest = (
-        ratios
-        .sort_values(
+        ratios.sort_values(
             [
                 "company_id",
                 "year",
@@ -278,9 +262,7 @@ def load_data():
     # Composite score
     # --------------------------------------------------------
 
-    composite = pd.read_csv(
-        COMPOSITE_PATH
-    )
+    composite = pd.read_csv(COMPOSITE_PATH)
 
     composite = composite[
         [
@@ -310,17 +292,9 @@ def load_data():
         ]
     ].copy()
 
-    peers["company_id"] = (
-        peers["company_id"]
-        .astype(str)
-        .str.strip()
-    )
+    peers["company_id"] = peers["company_id"].astype(str).str.strip()
 
-    latest["company_id"] = (
-        latest["company_id"]
-        .astype(str)
-        .str.strip()
-    )
+    latest["company_id"] = latest["company_id"].astype(str).str.strip()
 
     latest = latest.merge(
         peers,
@@ -376,9 +350,7 @@ def normalize_peer_values(
         ),
     }
 
-    normalized = pd.DataFrame(
-        index=result.index
-    )
+    normalized = pd.DataFrame(index=result.index)
 
     for axis, (
         column,
@@ -410,18 +382,12 @@ def normalize_peer_values(
                 index=result.index,
             )
         else:
-            score = (
-                (clipped - p10)
-                / (p90 - p10)
-                * 100
-            )
+            score = (clipped - p10) / (p90 - p10) * 100
 
         if inverse:
             score = 100 - score
 
-        normalized[axis] = (
-            score.fillna(50.0)
-        )
+        normalized[axis] = score.fillna(50.0)
 
     return normalized
 
@@ -442,46 +408,27 @@ def create_radar_chart(
         endpoint=False,
     )
 
-    company_values = (
-        company_scores[AXES]
-        .fillna(0)
-        .tolist()
-    )
+    company_values = company_scores[AXES].fillna(0).tolist()
 
-    peer_values = (
-        peer_scores[AXES]
-        .fillna(0)
-        .tolist()
-    )
+    peer_values = peer_scores[AXES].fillna(0).tolist()
 
     company_values += company_values[:1]
     peer_values += peer_values[:1]
 
-    plot_angles = (
-        angles.tolist()
-        + [angles[0]]
-    )
+    plot_angles = angles.tolist() + [angles[0]]
 
-    fig = plt.figure(
-        figsize=(9, 9)
-    )
+    fig = plt.figure(figsize=(9, 9))
 
     ax = fig.add_subplot(
         111,
         polar=True,
     )
 
-    ax.set_theta_offset(
-        np.pi / 2
-    )
+    ax.set_theta_offset(np.pi / 2)
 
-    ax.set_theta_direction(
-        -1
-    )
+    ax.set_theta_direction(-1)
 
-    ax.set_xticks(
-        angles
-    )
+    ax.set_xticks(angles)
 
     ax.set_xticklabels(
         AXES,
@@ -572,9 +519,7 @@ def generate_all_charts():
 
     generated = 0
 
-    peer_data = data[
-        data["peer_group_name"].notna()
-    ].copy()
+    peer_data = data[data["peer_group_name"].notna()].copy()
 
     # --------------------------------------------------------
     # Generate peer-group charts
@@ -585,24 +530,15 @@ def generate_all_charts():
         sort=True,
     ):
 
-        normalized = normalize_peer_values(
-            group
-        )
+        normalized = normalize_peer_values(group)
 
-        peer_average = normalized.mean(
-            numeric_only=True
-        )
+        peer_average = normalized.mean(numeric_only=True)
 
         for index, company in group.iterrows():
 
-            company_scores = normalized.loc[
-                index
-            ]
+            company_scores = normalized.loc[index]
 
-            output_path = (
-                OUTPUT_DIR
-                / f"{company['company_id']}_radar.png"
-            )
+            output_path = OUTPUT_DIR / f"{company['company_id']}_radar.png"
 
             create_radar_chart(
                 company_id=company["company_id"],
@@ -618,30 +554,19 @@ def generate_all_charts():
     # No-peer companies
     # --------------------------------------------------------
 
-    no_peer = data[
-        data["peer_group_name"].isna()
-    ].copy()
+    no_peer = data[data["peer_group_name"].isna()].copy()
 
     if not no_peer.empty:
 
-        normalized_all = normalize_peer_values(
-            data
-        )
+        normalized_all = normalize_peer_values(data)
 
-        nifty_average = normalized_all.mean(
-            numeric_only=True
-        )
+        nifty_average = normalized_all.mean(numeric_only=True)
 
         for index, company in no_peer.iterrows():
 
-            company_scores = normalized_all.loc[
-                index
-            ]
+            company_scores = normalized_all.loc[index]
 
-            output_path = (
-                OUTPUT_DIR
-                / f"{company['company_id']}_radar.png"
-            )
+            output_path = OUTPUT_DIR / f"{company['company_id']}_radar.png"
 
             create_radar_chart(
                 company_id=company["company_id"],
@@ -653,13 +578,9 @@ def generate_all_charts():
 
             generated += 1
 
-    print(
-        f"Radar charts generated: {generated}"
-    )
+    print(f"Radar charts generated: {generated}")
 
-    print(
-        f"Output directory: {OUTPUT_DIR}"
-    )
+    print(f"Output directory: {OUTPUT_DIR}")
 
 
 def main():

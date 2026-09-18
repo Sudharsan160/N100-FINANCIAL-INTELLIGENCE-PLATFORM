@@ -2,10 +2,8 @@
 
 import sqlite3
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
-
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 DB_PATH = ROOT_DIR / "nifty100.db"
@@ -21,7 +19,7 @@ Number = float | int | None
 def safe_divide(
     numerator: Number,
     denominator: Number,
-) -> Optional[float]:
+) -> float | None:
     """Safely divide two numeric values."""
     if numerator is None or denominator is None:
         return None
@@ -30,6 +28,9 @@ def safe_divide(
         numerator = float(numerator)
         denominator = float(denominator)
     except (TypeError, ValueError):
+        return None
+
+    if pd.isna(numerator) or pd.isna(denominator):
         return None
 
     if denominator == 0:
@@ -41,7 +42,7 @@ def safe_divide(
 def cfo_quality(
     operating_cash_flow: Number,
     net_profit: Number,
-) -> Optional[float]:
+) -> float | None:
     """CFO / PAT."""
     return safe_divide(
         operating_cash_flow,
@@ -52,13 +53,18 @@ def cfo_quality(
 def capex_intensity(
     capital_expenditure: Number,
     revenue: Number,
-) -> Optional[float]:
+) -> float | None:
     """|CapEx| / Revenue × 100."""
     if capital_expenditure is None:
         return None
 
+    try:
+        capital_expenditure = float(capital_expenditure)
+    except (TypeError, ValueError):
+        return None
+
     value = safe_divide(
-        abs(float(capital_expenditure)),
+        abs(capital_expenditure),
         revenue,
     )
 
@@ -68,14 +74,63 @@ def capex_intensity(
 def free_cash_flow_conversion(
     free_cash_flow: Number,
     ebitda: Number,
-) -> Optional[float]:
-    """FCF / EBITDA × 100."""
-    value = safe_divide(
+) -> float | None:
+    """
+    FCF / EBITDA.
+
+    Returns the raw conversion ratio rather than multiplying by 100.
+    Example: FCF=200 and EBITDA=100 -> 2.0.
+    """
+    return safe_divide(
         free_cash_flow,
         ebitda,
     )
 
+
+def free_cash_flow_margin(
+    free_cash_flow: Number,
+    revenue: Number,
+) -> float | None:
+    """FCF / Revenue × 100."""
+    value = safe_divide(
+        free_cash_flow,
+        revenue,
+    )
+
     return None if value is None else value * 100.0
+
+
+def cash_flow_to_debt(
+    cash_flow: Number,
+    debt: Number,
+) -> float | None:
+    """Cash flow / Total debt."""
+    return safe_divide(
+        cash_flow,
+        debt,
+    )
+
+
+def investing_to_cfo(
+    investing_cash_flow: Number,
+    operating_cash_flow: Number,
+) -> float | None:
+    """Investing cash flow / CFO."""
+    return safe_divide(
+        investing_cash_flow,
+        operating_cash_flow,
+    )
+
+
+def financing_to_cfo(
+    financing_cash_flow: Number,
+    operating_cash_flow: Number,
+) -> float | None:
+    """Financing cash flow / CFO."""
+    return safe_divide(
+        financing_cash_flow,
+        operating_cash_flow,
+    )
 
 
 def classify_cfo_quality(score: Number) -> str:
@@ -87,8 +142,10 @@ def classify_cfo_quality(score: Number) -> str:
 
     if score > 1.0:
         return "High Quality"
+
     if score >= 0.5:
         return "Moderate"
+
     return "Accrual Risk"
 
 
@@ -101,8 +158,10 @@ def classify_capex_intensity(value: Number) -> str:
 
     if value < 3:
         return "Asset Light"
+
     if value <= 8:
         return "Moderate"
+
     return "Capital Intensive"
 
 
@@ -253,7 +312,10 @@ def load_data():
     )
 
 
-def prepare_numeric(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
+def prepare_numeric(
+    df: pd.DataFrame,
+    columns: list[str],
+) -> pd.DataFrame:
     """Convert selected columns to numeric safely."""
     result = df.copy()
 
@@ -272,29 +334,31 @@ def latest_two(
     company_id: str,
 ) -> tuple[pd.Series | None, pd.Series | None]:
     """Return latest and previous rows for a company."""
-    subset = df[
-        df["company_id"].astype(str) == str(company_id)
-    ].copy()
+    subset = df[df["company_id"].astype(str) == str(company_id)].copy()
 
     if subset.empty:
         return None, None
 
-    subset = subset.sort_values("year")
+    subset["year"] = pd.to_numeric(
+        subset["year"],
+        errors="coerce",
+    )
+
+    subset = subset.dropna(subset=["year"]).sort_values("year")
+
+    if subset.empty:
+        return None, None
 
     latest = subset.iloc[-1]
 
-    previous = (
-        subset.iloc[-2]
-        if len(subset) >= 2
-        else None
-    )
+    previous = subset.iloc[-2] if len(subset) >= 2 else None
 
     return latest, previous
 
 
 def fcf_cagr_5yr(
     company_ratio_history: pd.DataFrame,
-) -> Optional[float]:
+) -> float | None:
     """
     Calculate 5Y FCF CAGR from the financial_ratios history.
 
@@ -316,9 +380,7 @@ def fcf_cagr_5yr(
         errors="coerce",
     )
 
-    history = history.dropna(
-        subset=["year", "free_cash_flow_cr"]
-    )
+    history = history.dropna(subset=["year", "free_cash_flow_cr"])
 
     if history.empty:
         return None
@@ -326,30 +388,21 @@ def fcf_cagr_5yr(
     latest_year = int(history["year"].max())
     start_year = latest_year - 5
 
-    start_rows = history[
-        history["year"] == start_year
-    ]
+    start_rows = history[history["year"] == start_year]
 
-    end_rows = history[
-        history["year"] == latest_year
-    ]
+    end_rows = history[history["year"] == latest_year]
 
     if start_rows.empty or end_rows.empty:
         return None
 
-    start_value = float(
-        start_rows.iloc[-1]["free_cash_flow_cr"]
-    )
-    end_value = float(
-        end_rows.iloc[-1]["free_cash_flow_cr"]
-    )
+    start_value = float(start_rows.iloc[-1]["free_cash_flow_cr"])
+
+    end_value = float(end_rows.iloc[-1]["free_cash_flow_cr"])
 
     if start_value <= 0 or end_value < 0:
         return None
 
-    return (
-        (end_value / start_value) ** (1 / 5) - 1
-    ) * 100.0
+    return ((end_value / start_value) ** (1 / 5) - 1) * 100.0
 
 
 def calculate_company(
@@ -363,17 +416,11 @@ def calculate_company(
 ) -> dict:
     """Calculate Day 31 metrics for one company."""
 
-    company_cf = cashflow[
-        cashflow["company_id"].astype(str) == str(company_id)
-    ].copy()
+    company_cf = cashflow[cashflow["company_id"].astype(str) == str(company_id)].copy()
 
-    company_pl = pnl[
-        pnl["company_id"].astype(str) == str(company_id)
-    ].copy()
+    company_pl = pnl[pnl["company_id"].astype(str) == str(company_id)].copy()
 
-    company_ratios = ratios[
-        ratios["company_id"].astype(str) == str(company_id)
-    ].copy()
+    company_ratios = ratios[ratios["company_id"].astype(str) == str(company_id)].copy()
 
     company_bs = balancesheet[
         balancesheet["company_id"].astype(str) == str(company_id)
@@ -437,26 +484,18 @@ def calculate_company(
         axis=1,
     )
 
-    five_year = (
-        merged.sort_values("year")
-        .dropna(subset=["year"])
-        .tail(5)
-    )
+    five_year = merged.sort_values("year").dropna(subset=["year"]).tail(5)
 
     cfo_quality_score = (
-        five_year["cfo_pat_ratio"].mean()
-        if not five_year.empty
-        else None
+        five_year["cfo_pat_ratio"].mean() if not five_year.empty else None
     )
 
-    cfo_quality_label = classify_cfo_quality(
-        cfo_quality_score
-    )
+    cfo_quality_label = classify_cfo_quality(cfo_quality_score)
 
     # -----------------------------------------------------
     # Latest cash-flow year
     # -----------------------------------------------------
-    latest_cf, previous_cf = latest_two(
+    latest_cf, _ = latest_two(
         company_cf,
         company_id,
     )
@@ -492,41 +531,34 @@ def calculate_company(
         depreciation = latest_pl["depreciation"]
 
         if pd.notna(operating_profit):
-            depreciation_value = (
-                0.0
-                if pd.isna(depreciation)
-                else float(depreciation)
-            )
+            depreciation_value = 0.0 if pd.isna(depreciation) else float(depreciation)
 
-            latest_ebitda = (
-                float(operating_profit)
-                + abs(depreciation_value)
-            )
+            latest_ebitda = float(operating_profit) + abs(depreciation_value)
         else:
             latest_ebitda = None
 
     # -----------------------------------------------------
     # CapEx intensity
     #
-    # Sprint specification says:
+    # Sprint specification:
     # abs(investing_activity) / sales * 100
     # -----------------------------------------------------
     capex_intensity_pct = safe_divide(
-        abs(float(latest_cfi))
-        if latest_cfi is not None and pd.notna(latest_cfi)
-        else None,
+        (
+            abs(float(latest_cfi))
+            if latest_cfi is not None and pd.notna(latest_cfi)
+            else None
+        ),
         latest_sales,
     )
 
     if capex_intensity_pct is not None:
         capex_intensity_pct *= 100.0
 
-    capex_label = classify_capex_intensity(
-        capex_intensity_pct
-    )
+    capex_label = classify_capex_intensity(capex_intensity_pct)
 
     # -----------------------------------------------------
-    # FCF conversion = FCF / EBITDA × 100
+    # FCF conversion = FCF / EBITDA
     # -----------------------------------------------------
     latest_ratio, _ = latest_two(
         company_ratios,
@@ -546,15 +578,11 @@ def calculate_company(
     # -----------------------------------------------------
     # 5Y FCF CAGR
     # -----------------------------------------------------
-    fcf_cagr = fcf_cagr_5yr(
-        company_ratios
-    )
+    fcf_cagr = fcf_cagr_5yr(company_ratios)
 
     # Prefer existing composite 5Y FCF CAGR when available.
     if not composite.empty and "fcf_cagr_5yr_pct" in composite.columns:
-        match = composite[
-            composite["company_id"].astype(str) == str(company_id)
-        ]
+        match = composite[composite["company_id"].astype(str) == str(company_id)]
 
         if not match.empty:
             existing = pd.to_numeric(
@@ -646,12 +674,7 @@ def main() -> None:
         composite,
     ) = load_data()
 
-    sector_map = (
-        sectors[
-            ["company_id", "sector"]
-        ]
-        .drop_duplicates("company_id")
-    )
+    sector_map = sectors[["company_id", "sector"]].drop_duplicates("company_id")
 
     companies = companies.merge(
         sector_map,
@@ -741,34 +764,19 @@ def main() -> None:
 
     print("Day 31 Cash Flow Intelligence")
     print("=" * 60)
-    print(f"Companies processed: {output['company_id'].nunique()}")
+    print(f"Companies processed: " f"{output['company_id'].nunique()}")
     print(f"Output rows: {len(output)}")
     print(f"Distress alerts: {len(distress)}")
-    print(
-        f"Deleveraging companies: "
-        f"{int(output['deleveraging_flag'].sum())}"
-    )
+    print(f"Deleveraging companies: " f"{int(output['deleveraging_flag'].sum())}")
 
     print("\nCFO Quality:")
-    print(
-        output["cfo_quality_label"].value_counts(
-            dropna=False
-        )
-    )
+    print(output["cfo_quality_label"].value_counts(dropna=False))
 
     print("\nCapEx:")
-    print(
-        output["capex_label"].value_counts(
-            dropna=False
-        )
-    )
+    print(output["capex_label"].value_counts(dropna=False))
 
     print("\nCapital Allocation:")
-    print(
-        output["capital_allocation_label"].value_counts(
-            dropna=False
-        )
-    )
+    print(output["capital_allocation_label"].value_counts(dropna=False))
 
     print(f"\nSaved: {INTELLIGENCE_PATH}")
     print(f"Saved: {DISTRESS_PATH}")

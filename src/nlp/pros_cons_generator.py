@@ -5,7 +5,6 @@ from pathlib import Path
 
 import pandas as pd
 
-
 ROOT_DIR = Path(__file__).resolve().parents[2]
 DB_PATH = ROOT_DIR / "nifty100.db"
 COMPOSITE_PATH = ROOT_DIR / "output" / "composite_scores.csv"
@@ -223,21 +222,11 @@ def generate_for_company(
     )
 
     latest_pl = (
-        company_pl.iloc[-1]
-        if not company_pl.empty
-        else pd.Series(dtype="object")
+        company_pl.iloc[-1] if not company_pl.empty else pd.Series(dtype="object")
     )
 
     latest_bs = (
-        company_bs.iloc[-1]
-        if not company_bs.empty
-        else pd.Series(dtype="object")
-    )
-
-    latest_cf = (
-        company_cf.iloc[-1]
-        if not company_cf.empty
-        else pd.Series(dtype="object")
+        company_bs.iloc[-1] if not company_bs.empty else pd.Series(dtype="object")
     )
 
     latest_market = (
@@ -253,9 +242,7 @@ def generate_for_company(
     # Pro 1: ROE > 20% sustained for 3+ years
     roe = company_ratios["return_on_equity_pct"]
 
-    if consecutive_positive_count(
-        roe - 20
-    ) >= 3:
+    if consecutive_positive_count(roe - 20) >= 3:
         strength = float(roe.tail(3).mean())
         confidence = confidence_from_strength(
             strength,
@@ -398,15 +385,8 @@ def generate_for_company(
         errors="coerce",
     )
 
-    if (
-        (pd.notna(icr) and icr > 10)
-        or (pd.notna(de) and de <= 0)
-    ):
-        strength = (
-            10.0
-            if pd.isna(icr)
-            else max(float(icr), 10.0)
-        )
+    if (pd.notna(icr) and icr > 10) or (pd.notna(de) and de <= 0):
+        strength = 10.0 if pd.isna(icr) else max(float(icr), 10.0)
 
         confidence = confidence_from_strength(
             strength,
@@ -481,10 +461,6 @@ def generate_for_company(
             )
 
     # Pro 9: EPS CAGR > 15%
-    eps_cagr = float(
-        composite_row["pat_cagr_5yr_pct"]
-    )
-
     # Use EPS growth history as supporting signal.
     eps_growth = company_ratios["eps_growth_pct"]
 
@@ -530,7 +506,6 @@ def generate_for_company(
             10.0,
         )
 
-        # Give an explicit positive confidence to a clean trend.
         confidence = max(65.0, confidence)
 
         if confidence > 60:
@@ -625,8 +600,7 @@ def generate_for_company(
     if (
         pd.notna(de)
         and de > 2
-        and str(composite_row["broad_sector"]).lower()
-        != "financials"
+        and str(composite_row["broad_sector"]).lower() != "financials"
     ):
         confidence = confidence_from_strength(
             float(de),
@@ -709,8 +683,7 @@ def generate_for_company(
                 "type": "con",
                 "rule_id": "CON_04",
                 "text": (
-                    "Company reported a net loss in the most recent "
-                    "financial year"
+                    "Company reported a net loss in the most recent " "financial year"
                 ),
                 "confidence_pct": round(min(confidence, 99), 2),
             }
@@ -861,22 +834,9 @@ def generate_for_company(
         # EV = Equity Value + Net Debt
         net_debt = float(enterprise_value - market_cap)
 
-        # No EBITDA field exists directly in the SQLite schema.
-        # Approximate EBITDA using operating profit + depreciation.
-
     # Because EBITDA is not present in market_cap/ratios, derive it
-    # from operating profit + depreciation when available.
-    if not company_pl.empty:
-        depreciation = pd.to_numeric(
-            company_pl["net_profit"],
-            errors="coerce",
-        )
-
-    if (
-        pd.notna(enterprise_value)
-        and pd.notna(market_cap)
-        and not latest_bs.empty
-    ):
+    # from operating profit when available.
+    if pd.notna(enterprise_value) and pd.notna(market_cap) and not latest_bs.empty:
         net_debt = enterprise_value - market_cap
     else:
         net_debt = None
@@ -959,15 +919,9 @@ def add_fallback_signal(
     composite_row: pd.Series,
 ) -> list[dict]:
 
-    has_pro = any(
-        row["type"] == "pro"
-        for row in rows
-    )
+    has_pro = any(row["type"] == "pro" for row in rows)
 
-    has_con = any(
-        row["type"] == "con"
-        for row in rows
-    )
+    has_con = any(row["type"] == "con" for row in rows)
 
     if not has_pro:
         rows.append(
@@ -1061,13 +1015,7 @@ def main() -> None:
     # -----------------------------------------------------
     # Verification
     # -----------------------------------------------------
-    company_counts = (
-        output.groupby(
-            ["company_id", "type"]
-        )
-        .size()
-        .unstack(fill_value=0)
-    )
+    company_counts = output.groupby(["company_id", "type"]).size().unstack(fill_value=0)
 
     missing_pro = [
         company
@@ -1091,11 +1039,15 @@ def main() -> None:
     print("\nBy type:")
     print(output["type"].value_counts())
 
-    print("\nCompanies with at least one pro:",
-          len(composite) - len(missing_pro))
+    print(
+        "\nCompanies with at least one pro:",
+        len(composite) - len(missing_pro),
+    )
 
-    print("Companies with at least one con:",
-          len(composite) - len(missing_con))
+    print(
+        "Companies with at least one con:",
+        len(composite) - len(missing_con),
+    )
 
     print("\nMissing pro companies:", missing_pro)
     print("Missing con companies:", missing_con)

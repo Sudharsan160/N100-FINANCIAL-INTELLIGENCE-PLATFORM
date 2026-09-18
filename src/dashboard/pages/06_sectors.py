@@ -7,7 +7,6 @@ import streamlit as st
 
 from src.dashboard.utils.db import get_sectors
 
-
 ROOT_DIR = Path(__file__).resolve().parents[3]
 DB_PATH = ROOT_DIR / "nifty100.db"
 
@@ -26,12 +25,7 @@ if sectors.empty:
 
 
 sector_names = (
-    sectors["broad_sector"]
-    .dropna()
-    .astype(str)
-    .sort_values()
-    .unique()
-    .tolist()
+    sectors["broad_sector"].dropna().astype(str).sort_values().unique().tolist()
 )
 
 selected_sector = st.selectbox(
@@ -75,7 +69,7 @@ try:
             conn,
             params=company_ids,
         )
-except Exception:
+except Exception:  # noqa: BLE001
     financial = pd.DataFrame()
 
 
@@ -90,15 +84,9 @@ financial["year"] = pd.to_numeric(
     errors="coerce",
 )
 
-financial = financial.sort_values(
-    ["company_id", "year"]
-)
+financial = financial.sort_values(["company_id", "year"])
 
-financial = (
-    financial
-    .groupby("company_id", as_index=False)
-    .tail(1)
-)
+financial = financial.groupby("company_id", as_index=False).tail(1)
 
 
 # ---------------------------------------------------------
@@ -130,9 +118,7 @@ for column in [
 # ---------------------------------------------------------
 # Company bubble chart
 # ---------------------------------------------------------
-st.subheader(
-    f"{selected_sector} — Companies"
-)
+st.subheader(f"{selected_sector} — Companies")
 
 chart_data = data.copy()
 
@@ -179,11 +165,9 @@ try:
         how="left",
     )
 
-    chart_data = chart_data.rename(
-        columns={"sales": "Revenue"}
-    )
+    chart_data = chart_data.rename(columns={"sales": "Revenue"})
 
-except Exception:
+except Exception:  # noqa: BLE001
     chart_data["Revenue"] = pd.NA
 
 
@@ -210,9 +194,7 @@ chart_data = chart_data.merge(
 # ---------------------------------------------------------
 # Bubble chart
 # ---------------------------------------------------------
-bubble = chart_data.dropna(
-    subset=["Revenue", "return_on_equity_pct"]
-).copy()
+bubble = chart_data.dropna(subset=["Revenue", "return_on_equity_pct"]).copy()
 
 if bubble.empty:
     st.info("Not enough data to create the sector bubble chart.")
@@ -237,7 +219,7 @@ else:
         height=600,
         xaxis_title="Revenue (₹ Cr)",
         yaxis_title="ROE (%)",
-        margin=dict(l=20, r=20, t=40, b=20),
+        margin={"l": 20, "r": 20, "t": 40, "b": 20},
     )
 
     st.plotly_chart(
@@ -251,9 +233,7 @@ else:
 # ---------------------------------------------------------
 st.divider()
 
-st.subheader(
-    f"{selected_sector} — Median KPIs"
-)
+st.subheader(f"{selected_sector} — Median KPIs")
 
 kpi_rows = []
 
@@ -292,7 +272,7 @@ else:
 
     fig_kpi.update_layout(
         height=400,
-        margin=dict(l=20, r=20, t=40, b=20),
+        margin={"l": 20, "r": 20, "t": 40, "b": 20},
     )
 
     st.plotly_chart(
@@ -301,6 +281,4 @@ else:
     )
 
 
-st.caption(
-    f"Companies in selected sector: {len(sector_companies)}"
-)
+st.caption(f"Companies in selected sector: {len(sector_companies)}")

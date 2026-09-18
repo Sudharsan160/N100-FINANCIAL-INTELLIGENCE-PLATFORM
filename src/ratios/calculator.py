@@ -24,12 +24,11 @@ from src.ratios.formulas import (
     operating_profit_growth,
     operating_profit_margin,
     pretax_margin,
-    revenue_growth,
     return_on_assets,
     return_on_capital_employed,
     return_on_equity,
+    revenue_growth,
 )
-
 
 BANK_COMPANIES = {
     "AXISBANK",
@@ -70,11 +69,7 @@ def _is_zero_record(record: dict[str, Any]) -> bool:
 
 def _record_signature(record: dict[str, Any]) -> tuple:
     """Create a comparable signature for deduplication."""
-    return tuple(
-        (key, record[key])
-        for key in sorted(record)
-        if key != "id"
-    )
+    return tuple((key, record[key]) for key in sorted(record) if key != "id")
 
 
 def deduplicate_records(
@@ -99,11 +94,7 @@ def deduplicate_records(
 
     records = list(unique.values())
 
-    non_zero = [
-        record
-        for record in records
-        if not _is_zero_record(record)
-    ]
+    non_zero = [record for record in records if not _is_zero_record(record)]
 
     if non_zero:
         records = non_zero
@@ -176,9 +167,7 @@ def calculate_ratio_row(
         and face_value is not None
         and face_value != 0
     ):
-        shares_outstanding = (
-            float(equity_capital) / float(face_value)
-        )
+        shares_outstanding = float(equity_capital) / float(face_value)
 
         book_value_per_share = share_divide(
             equity,
@@ -192,9 +181,7 @@ def calculate_ratio_row(
 
     if previous_profit_loss is not None:
         previous_sales = previous_profit_loss.get("sales")
-        previous_operating_profit = previous_profit_loss.get(
-            "operating_profit"
-        )
+        previous_operating_profit = previous_profit_loss.get("operating_profit")
         previous_net_profit = previous_profit_loss.get("net_profit")
         previous_eps = previous_profit_loss.get("eps")
 
@@ -233,7 +220,6 @@ def calculate_ratio_row(
         "dividend_payout_ratio_pct": dividend_payout,
         "total_debt_cr": borrowings,
         "cash_from_operations_cr": cash_from_operations,
-
         # Day 09 — Profitability
         "return_on_assets_pct": return_on_assets(
             net_profit,
@@ -243,7 +229,6 @@ def calculate_ratio_row(
             profit_before_tax,
             sales,
         ),
-
         # Day 09 — Cash flow
         "operating_cash_flow_margin_pct": operating_cash_flow_margin(
             cash_from_operations,
@@ -253,7 +238,6 @@ def calculate_ratio_row(
             cash_from_operations,
             net_profit,
         ),
-
         # Day 09 — Leverage
         "debt_ratio": debt_ratio(
             borrowings,
@@ -267,7 +251,6 @@ def calculate_ratio_row(
             total_assets,
             equity,
         ),
-
         # Day 09 — Growth
         "revenue_growth_pct": revenue_growth(
             sales,
@@ -285,7 +268,6 @@ def calculate_ratio_row(
             eps,
             previous_eps,
         ),
-
         # Day 11 — Cash Flow & Capital Allocation
         "cfo_to_total_debt": cfo_to_total_debt(
             cash_from_operations,
@@ -311,7 +293,6 @@ def calculate_ratio_row(
             capex,
             sales,
         ),
-
         # Day 13 — ROCE with bank carve-out
         "roce_pct": return_on_capital_employed(
             operating_profit,
@@ -323,8 +304,8 @@ def calculate_ratio_row(
 
 
 def safe_share_count(
-    net_profit: float | int | None,
-    eps: float | int | None,
+    net_profit: float | None,
+    eps: float | None,
 ) -> float | None:
     """
     Estimate outstanding shares from Net Profit / EPS.
@@ -336,8 +317,8 @@ def safe_share_count(
 
 
 def share_divide(
-    numerator: float | int | None,
-    denominator: float | int | None,
+    numerator: float | None,
+    denominator: float | None,
 ) -> float | None:
     """Safely calculate per-share value."""
     if numerator is None or denominator is None or denominator == 0:

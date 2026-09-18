@@ -6,11 +6,12 @@ Functions:
     normalize_ticker() -> cleans and standardizes stock ticker symbols
 """
 
+import math
 import re
-from typing import Any, Optional
+from typing import Any
 
 
-def normalize_year(value: Any) -> Optional[int]:
+def normalize_year(value: Any) -> int | None:
     """
     Normalize financial year/date values into a four-digit integer.
 
@@ -27,7 +28,7 @@ def normalize_year(value: Any) -> Optional[int]:
     if value is None:
         return None
 
-    if isinstance(value, float) and value != value:
+    if isinstance(value, float) and math.isnan(value):
         return None
 
     text = str(value).strip()
@@ -55,10 +56,9 @@ def normalize_year(value: Any) -> Optional[int]:
         return None
 
     raise ValueError(f"Invalid year value: {value!r}")
-    
 
 
-def normalize_ticker(value: Any) -> Optional[str]:
+def normalize_ticker(value: Any) -> str | None:
     """
     Normalize a stock ticker symbol.
 

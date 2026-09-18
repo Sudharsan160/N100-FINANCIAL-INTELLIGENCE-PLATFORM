@@ -4,7 +4,6 @@ import streamlit as st
 
 from src.dashboard.utils.db import get_companies, get_ratios
 
-
 st.title("Trend Analysis")
 st.caption("Explore up to three financial metrics across a company's historical years.")
 
@@ -36,9 +35,7 @@ if matches.empty:
 
 
 matches["label"] = (
-    matches["company_id"].astype(str)
-    + " — "
-    + matches["company_name"].astype(str)
+    matches["company_id"].astype(str) + " — " + matches["company_name"].astype(str)
 )
 
 selected_label = st.selectbox(
@@ -135,9 +132,7 @@ for metric_name in selected_metrics:
             mode="lines+markers+text",
             name=metric_name,
             text=[
-                f"{v:.1f}%"
-                if "x)" not in metric_name
-                else f"{v:.2f}x"
+                f"{v:.1f}%" if "x)" not in metric_name else f"{v:.2f}x"
                 for v in chart_df["value"]
             ],
             textposition="top center",
@@ -150,7 +145,7 @@ fig.update_layout(
     hovermode="x unified",
     xaxis_title="Year",
     yaxis_title="Metric Value",
-    margin=dict(l=20, r=20, t=40, b=20),
+    margin={"l": 20, "r": 20, "t": 40, "b": 20},
 )
 
 st.plotly_chart(

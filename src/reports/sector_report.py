@@ -1,6 +1,6 @@
-﻿from pathlib import Path
+﻿import math
 import sqlite3
-import math
+from pathlib import Path
 
 import pandas as pd
 from reportlab.lib import colors
@@ -8,7 +8,6 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
-
 
 ROOT = Path(__file__).resolve().parents[2]
 DB_PATH = ROOT / "nifty100.db"
@@ -24,16 +23,12 @@ WINDOWS_BOLD = Path(r"C:\Windows\Fonts\arialbd.ttf")
 
 if WINDOWS_REGULAR.exists() and WINDOWS_BOLD.exists():
     try:
-        pdfmetrics.registerFont(
-            TTFont("ArialEmbedded", str(WINDOWS_REGULAR))
-        )
-        pdfmetrics.registerFont(
-            TTFont("ArialEmbedded-Bold", str(WINDOWS_BOLD))
-        )
+        pdfmetrics.registerFont(TTFont("ArialEmbedded", str(WINDOWS_REGULAR)))
+        pdfmetrics.registerFont(TTFont("ArialEmbedded-Bold", str(WINDOWS_BOLD)))
         FONT_REGULAR = "ArialEmbedded"
         FONT_BOLD = "ArialEmbedded-Bold"
         print("Using embedded Arial fonts.")
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         print(f"Arial embedding failed: {exc}")
         print("Using Helvetica.")
 
@@ -174,11 +169,7 @@ def draw_horizontal_bars(
             stroke=0,
         )
 
-        actual_w = (
-            abs(value)
-            / max_value
-            * bar_w
-        )
+        actual_w = abs(value) / max_value * bar_w
 
         c.setFillColor(LIGHT_NAVY)
         c.rect(
@@ -204,9 +195,7 @@ def draw_horizontal_bars(
 
 def load_sector_data():
     if not DB_PATH.exists():
-        raise FileNotFoundError(
-            f"Database not found: {DB_PATH}"
-        )
+        raise FileNotFoundError(f"Database not found: {DB_PATH}")
 
     conn = sqlite3.connect(DB_PATH)
 
@@ -252,23 +241,14 @@ def generate_sector_report(
     ratios,
     companies,
 ):
-    sector_companies = sectors[
-        sectors["broad_sector"] == sector_name
-    ].copy()
+    sector_companies = sectors[sectors["broad_sector"] == sector_name].copy()
 
     if sector_companies.empty:
         return None
 
-    company_ids = (
-        sector_companies["company_id"]
-        .astype(str)
-    )
+    company_ids = sector_companies["company_id"].astype(str)
 
-    sector_ratios = ratios[
-        ratios["company_id"]
-        .astype(str)
-        .isin(company_ids)
-    ].copy()
+    sector_ratios = ratios[ratios["company_id"].astype(str).isin(company_ids)].copy()
 
     if sector_ratios.empty:
         return None
@@ -278,24 +258,16 @@ def generate_sector_report(
         errors="coerce",
     )
 
-    sector_ratios = sector_ratios.dropna(
-        subset=["year"]
-    )
+    sector_ratios = sector_ratios.dropna(subset=["year"])
 
     if sector_ratios.empty:
         return None
 
     latest_year = sector_ratios["year"].max()
 
-    latest = sector_ratios[
-        sector_ratios["year"] == latest_year
-    ].copy()
+    latest = sector_ratios[sector_ratios["year"] == latest_year].copy()
 
-    company_lookup = (
-        companies.set_index("company_id")
-        ["company_name"]
-        .to_dict()
-    )
+    company_lookup = companies.set_index("company_id")["company_name"].to_dict()
 
     median_roe = (
         latest["return_on_equity_pct"].median()
@@ -321,16 +293,13 @@ def generate_sector_report(
     )
 
     safe_name = (
-        sector_name
-        .replace("/", "_")
+        sector_name.replace("/", "_")
         .replace("\\", "_")
         .replace(" ", "_")
         .replace("&", "and")
     )
 
-    output_file = (
-        OUTPUT_DIR / f"{safe_name}.pdf"
-    )
+    output_file = OUTPUT_DIR / f"{safe_name}.pdf"
 
     c = canvas.Canvas(
         str(output_file),
@@ -338,9 +307,7 @@ def generate_sector_report(
         pageCompression=1,
     )
 
-    c.setTitle(
-        f"{sector_name} - Sector Intelligence"
-    )
+    c.setTitle(f"{sector_name} - Sector Intelligence")
 
     draw_header(
         c,
@@ -354,9 +321,7 @@ def generate_sector_report(
     y = PAGE_H - 165
     gap = 8
 
-    tile_w = (
-        PAGE_W - 72 - gap * 3
-    ) / 4
+    tile_w = (PAGE_W - 72 - gap * 3) / 4
 
     draw_kpi(
         c,
@@ -437,9 +402,7 @@ def generate_sector_report(
             )
             for cid in top_roe["company_id"]
         ],
-        top_roe[
-            "return_on_equity_pct"
-        ].tolist(),
+        top_roe["return_on_equity_pct"].tolist(),
     )
 
     # -----------------------------------------------------
@@ -481,9 +444,7 @@ def generate_sector_report(
             )
             for cid in top_margin["company_id"]
         ],
-        top_margin[
-            "net_profit_margin_pct"
-        ].tolist(),
+        top_margin["net_profit_margin_pct"].tolist(),
     )
 
     # -----------------------------------------------------
@@ -497,13 +458,7 @@ def generate_sector_report(
         PAGE_H - 635,
     )
 
-    sub_counts = (
-        sector_companies[
-            "sub_sector"
-        ]
-        .fillna("Unclassified")
-        .value_counts()
-    )
+    sub_counts = sector_companies["sub_sector"].fillna("Unclassified").value_counts()
 
     draw_horizontal_bars(
         c,
@@ -538,16 +493,10 @@ def main():
     ) = load_sector_data()
 
     unique_sectors = (
-        sectors["broad_sector"]
-        .dropna()
-        .drop_duplicates()
-        .sort_values()
-        .tolist()
+        sectors["broad_sector"].dropna().drop_duplicates().sort_values().tolist()
     )
 
-    print(
-        f"Sector count: {len(unique_sectors)}"
-    )
+    print(f"Sector count: {len(unique_sectors)}")
 
     generated = 0
     failed = 0
@@ -563,20 +512,14 @@ def main():
 
             if output is not None:
                 generated += 1
-                print(
-                    f"[OK] {sector_name}: {output.name}"
-                )
+                print(f"[OK] {sector_name}: {output.name}")
             else:
                 failed += 1
-                print(
-                    f"[SKIP] {sector_name}: insufficient data"
-                )
+                print(f"[SKIP] {sector_name}: insufficient data")
 
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             failed += 1
-            print(
-                f"[ERROR] {sector_name}: {exc}"
-            )
+            print(f"[ERROR] {sector_name}: {exc}")
 
     print("\n=== SECTOR REPORT RESULT ===")
     print(f"Generated: {generated}")

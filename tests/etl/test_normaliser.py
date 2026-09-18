@@ -2,10 +2,10 @@ import pytest
 
 from src.etl.normaliser import normalize_ticker, normalize_year
 
-
 # =========================
 # normalize_year() tests
 # =========================
+
 
 @pytest.mark.parametrize(
     "value, expected",
@@ -58,6 +58,7 @@ def test_normalize_year_nan():
 # =========================
 # normalize_ticker() tests
 # =========================
+
 
 @pytest.mark.parametrize(
     "value, expected",

@@ -1,6 +1,6 @@
-from pathlib import Path
 import math
 import sqlite3
+from pathlib import Path
 
 import pandas as pd
 from reportlab.lib import colors
@@ -9,26 +9,17 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
-
 ROOT = Path(__file__).resolve().parents[2]
 
 DB_PATH = ROOT / "nifty100.db"
 
-CASHFLOW_FILE = (
-    ROOT / "output" / "cashflow_intelligence.xlsx"
-)
+CASHFLOW_FILE = ROOT / "output" / "cashflow_intelligence.xlsx"
 
-CAPITAL_FILE = (
-    ROOT / "output" / "capital_allocation.csv"
-)
+CAPITAL_FILE = ROOT / "output" / "capital_allocation.csv"
 
-OUTPUT_DIR = (
-    ROOT / "reports" / "portfolio"
-)
+OUTPUT_DIR = ROOT / "reports" / "portfolio"
 
-OUTPUT_FILE = (
-    OUTPUT_DIR / "portfolio_summary.pdf"
-)
+OUTPUT_FILE = OUTPUT_DIR / "portfolio_summary.pdf"
 
 
 PAGE_W, PAGE_H = A4
@@ -65,13 +56,9 @@ if ARIAL.exists() and ARIAL_BOLD.exists():
 
         print("Using embedded Arial fonts.")
 
-    except Exception as exc:
-        print(
-            f"Arial embedding failed: {exc}"
-        )
-        print(
-            "Using Helvetica."
-        )
+    except Exception as exc:  # noqa: BLE001
+        print(f"Arial embedding failed: {exc}")
+        print("Using Helvetica.")
 
 
 # =========================================================
@@ -93,6 +80,7 @@ WHITE = colors.white
 # =========================================================
 # HELPERS
 # =========================================================
+
 
 def safe_float(value):
     try:
@@ -168,7 +156,7 @@ def clean_text(value, fallback="N/A"):
     try:
         if pd.isna(value):
             return fallback
-    except Exception:
+    except Exception:  # noqa: BLE001, S110
         pass
 
     text = str(value).strip()
@@ -180,16 +168,13 @@ def clean_text(value, fallback="N/A"):
 # DATA LOAD
 # =========================================================
 
+
 def load_data():
 
     if not DB_PATH.exists():
-        raise FileNotFoundError(
-            f"Database not found: {DB_PATH}"
-        )
+        raise FileNotFoundError(f"Database not found: {DB_PATH}")
 
-    conn = sqlite3.connect(
-        DB_PATH
-    )
+    conn = sqlite3.connect(DB_PATH)
 
     try:
 
@@ -229,9 +214,7 @@ def load_data():
 
     if CASHFLOW_FILE.exists():
 
-        cashflow = pd.read_excel(
-            CASHFLOW_FILE
-        )
+        cashflow = pd.read_excel(CASHFLOW_FILE)
 
     else:
 
@@ -239,9 +222,7 @@ def load_data():
 
     if CAPITAL_FILE.exists():
 
-        capital = pd.read_csv(
-            CAPITAL_FILE
-        )
+        capital = pd.read_csv(CAPITAL_FILE)
 
     else:
 
@@ -260,6 +241,7 @@ def load_data():
 # BUILD ONE COMPANY SUMMARY
 # =========================================================
 
+
 def build_company_summaries(
     companies,
     sectors,
@@ -269,24 +251,14 @@ def build_company_summaries(
 ):
 
     sector_map = (
-        sectors
-        .drop_duplicates(
-            "company_id"
-        )
-        .set_index(
-            "company_id"
-        )["broad_sector"]
+        sectors.drop_duplicates("company_id")
+        .set_index("company_id")["broad_sector"]
         .to_dict()
     )
 
     subsection_map = (
-        sectors
-        .drop_duplicates(
-            "company_id"
-        )
-        .set_index(
-            "company_id"
-        )["sub_sector"]
+        sectors.drop_duplicates("company_id")
+        .set_index("company_id")["sub_sector"]
         .to_dict()
     )
 
@@ -294,15 +266,9 @@ def build_company_summaries(
 
     for _, company in companies.iterrows():
 
-        company_id = company[
-            "company_id"
-        ]
+        company_id = company["company_id"]
 
-        group = ratios[
-            ratios["company_id"]
-            .astype(str)
-            == str(company_id)
-        ].copy()
+        group = ratios[ratios["company_id"].astype(str) == str(company_id)].copy()
 
         if not group.empty:
 
@@ -311,104 +277,48 @@ def build_company_summaries(
                 errors="coerce",
             )
 
-            group = group.dropna(
-                subset=["year"]
-            )
+            group = group.dropna(subset=["year"])
 
-            group = group.sort_values(
-                "year"
-            )
+            group = group.sort_values("year")
 
         if group.empty:
 
-            latest = pd.Series(
-                dtype=object
-            )
+            latest = pd.Series(dtype=object)
 
-            previous = pd.Series(
-                dtype=object
-            )
+            previous = pd.Series(dtype=object)
 
         else:
 
             latest = group.iloc[-1]
 
-            previous = (
-                group.iloc[-2]
-                if len(group) >= 2
-                else pd.Series(
-                    dtype=object
-                )
-            )
+            previous = group.iloc[-2] if len(group) >= 2 else pd.Series(dtype=object)
 
-        latest_roe = safe_float(
-            latest.get(
-                "return_on_equity_pct"
-            )
-        )
+        latest_roe = safe_float(latest.get("return_on_equity_pct"))
 
-        previous_roe = safe_float(
-            previous.get(
-                "return_on_equity_pct"
-            )
-        )
+        previous_roe = safe_float(previous.get("return_on_equity_pct"))
 
         roe_change = None
 
-        if (
-            latest_roe is not None
-            and previous_roe is not None
-        ):
-            roe_change = (
-                latest_roe
-                - previous_roe
-            )
+        if latest_roe is not None and previous_roe is not None:
+            roe_change = latest_roe - previous_roe
 
-        latest_npm = safe_float(
-            latest.get(
-                "net_profit_margin_pct"
-            )
-        )
+        latest_npm = safe_float(latest.get("net_profit_margin_pct"))
 
-        previous_npm = safe_float(
-            previous.get(
-                "net_profit_margin_pct"
-            )
-        )
+        previous_npm = safe_float(previous.get("net_profit_margin_pct"))
 
         npm_change = None
 
-        if (
-            latest_npm is not None
-            and previous_npm is not None
-        ):
-            npm_change = (
-                latest_npm
-                - previous_npm
-            )
+        if latest_npm is not None and previous_npm is not None:
+            npm_change = latest_npm - previous_npm
 
-        latest_de = safe_float(
-            latest.get(
-                "debt_to_equity"
-            )
-        )
+        latest_de = safe_float(latest.get("debt_to_equity"))
 
-        previous_de = safe_float(
-            previous.get(
-                "debt_to_equity"
-            )
-        )
+        previous_de = safe_float(previous.get("debt_to_equity"))
 
         de_change = None
 
-        if (
-            latest_de is not None
-            and previous_de is not None
-        ):
-            de_change = (
-                latest_de
-                - previous_de
-            )
+        if latest_de is not None and previous_de is not None:
+            de_change = latest_de - previous_de
 
         # -------------------------------------------------
         # Cash-flow intelligence
@@ -416,11 +326,7 @@ def build_company_summaries(
 
         if not cashflow.empty:
 
-            cf_rows = cashflow[
-                cashflow["company_id"]
-                .astype(str)
-                == str(company_id)
-            ]
+            cf_rows = cashflow[cashflow["company_id"].astype(str) == str(company_id)]
 
         else:
 
@@ -432,9 +338,7 @@ def build_company_summaries(
 
         else:
 
-            cf = cf_rows.iloc[
-                0
-            ].to_dict()
+            cf = cf_rows.iloc[0].to_dict()
 
         # -------------------------------------------------
         # Capital allocation
@@ -443,9 +347,7 @@ def build_company_summaries(
         if not capital.empty:
 
             ca_rows = capital[
-                capital["company_id"]
-                .astype(str)
-                == str(company_id)
+                capital["company_id"].astype(str) == str(company_id)
             ].copy()
 
         else:
@@ -459,9 +361,7 @@ def build_company_summaries(
                 errors="coerce",
             )
 
-            ca_rows = ca_rows.dropna(
-                subset=["year"]
-            )
+            ca_rows = ca_rows.dropna(subset=["year"])
 
         if ca_rows.empty:
 
@@ -469,12 +369,7 @@ def build_company_summaries(
 
         else:
 
-            ca = (
-                ca_rows
-                .sort_values("year")
-                .iloc[-1]
-                .to_dict()
-            )
+            ca = ca_rows.sort_values("year").iloc[-1].to_dict()
 
         allocation = cf.get(
             "capital_allocation",
@@ -493,101 +388,40 @@ def build_company_summaries(
         summaries.append(
             {
                 "company_id": company_id,
-
-                "company_name": company[
-                    "company_name"
-                ],
-
+                "company_name": company["company_name"],
                 "sector": sector_map.get(
                     company_id,
                     "Unknown",
                 ),
-
                 "sub_sector": subsection_map.get(
                     company_id,
                     "Unknown",
                 ),
-
-                "year": safe_float(
-                    latest.get("year")
-                ),
-
+                "year": safe_float(latest.get("year")),
                 "roe": latest_roe,
-
-                "roe_arrow": trend_arrow(
-                    roe_change
-                ),
-
+                "roe_arrow": trend_arrow(roe_change),
                 "npm": latest_npm,
-
-                "npm_arrow": trend_arrow(
-                    npm_change
-                ),
-
+                "npm_arrow": trend_arrow(npm_change),
                 "de": latest_de,
-
-                "de_arrow": trend_arrow(
-                    -de_change
-                    if de_change is not None
-                    else None
-                ),
-
-                "revenue_cagr": safe_float(
-                    latest.get(
-                        "revenue_cagr_pct"
-                    )
-                ),
-
-                "profit_cagr": safe_float(
-                    latest.get(
-                        "net_profit_growth_pct"
-                    )
-                ),
-
-                "fcf": safe_float(
-                    latest.get(
-                        "free_cash_flow_cr"
-                    )
-                ),
-
-                "cfo_quality": clean_text(
-                    cf.get(
-                        "cfo_quality_label"
-                    )
-                ),
-
-                "capex": clean_text(
-                    cf.get(
-                        "capex_label"
-                    )
-                ),
-
-                "distress": clean_text(
-                    cf.get(
-                        "distress_flag"
-                    )
-                ),
-
-                "deleveraging": clean_text(
-                    cf.get(
-                        "deleveraging_flag"
-                    )
-                ),
-
-                "capital_allocation": clean_text(
-                    allocation
-                ),
+                "de_arrow": trend_arrow(-de_change if de_change is not None else None),
+                "revenue_cagr": safe_float(latest.get("revenue_cagr_pct")),
+                "profit_cagr": safe_float(latest.get("net_profit_growth_pct")),
+                "fcf": safe_float(latest.get("free_cash_flow_cr")),
+                "cfo_quality": clean_text(cf.get("cfo_quality_label")),
+                "capex": clean_text(cf.get("capex_label")),
+                "distress": clean_text(cf.get("distress_flag")),
+                "deleveraging": clean_text(cf.get("deleveraging_flag")),
+                "capital_allocation": clean_text(allocation),
             }
         )
 
-    return pd.DataFrame(
-        summaries
-    )
+    return pd.DataFrame(summaries)
 
 
 # =========================================================
 # PDF DRAWING
 # =========================================================
+
 
 def draw_header(
     c,
@@ -595,9 +429,7 @@ def draw_header(
     ticker,
     sector,
 ):
-    c.setFillColor(
-        NAVY
-    )
+    c.setFillColor(NAVY)
 
     c.rect(
         0,
@@ -608,9 +440,7 @@ def draw_header(
         stroke=0,
     )
 
-    c.setFillColor(
-        WHITE
-    )
+    c.setFillColor(WHITE)
 
     c.setFont(
         FONT_BOLD,
@@ -669,13 +499,9 @@ def draw_info_box(
     label,
     value,
 ):
-    c.setFillColor(
-        LIGHT_GREY
-    )
+    c.setFillColor(LIGHT_GREY)
 
-    c.setStrokeColor(
-        BORDER
-    )
+    c.setStrokeColor(BORDER)
 
     c.roundRect(
         x,
@@ -687,9 +513,7 @@ def draw_info_box(
         stroke=1,
     )
 
-    c.setFillColor(
-        MID_GREY
-    )
+    c.setFillColor(MID_GREY)
 
     c.setFont(
         FONT_BOLD,
@@ -702,18 +526,14 @@ def draw_info_box(
         label.upper(),
     )
 
-    c.setFillColor(
-        DARK
-    )
+    c.setFillColor(DARK)
 
     c.setFont(
         FONT_BOLD,
         13,
     )
 
-    value_text = clean_text(
-        value
-    )
+    value_text = clean_text(value)
 
     if len(value_text) > 20:
         value_text = value_text[:20]
@@ -732,9 +552,7 @@ def draw_metric_row(
     current,
     trend,
 ):
-    c.setFillColor(
-        MID_GREY
-    )
+    c.setFillColor(MID_GREY)
 
     c.setFont(
         FONT_BOLD,
@@ -747,9 +565,7 @@ def draw_metric_row(
         label,
     )
 
-    c.setFillColor(
-        DARK
-    )
+    c.setFillColor(DARK)
 
     c.setFont(
         FONT_BOLD,
@@ -768,17 +584,11 @@ def draw_metric_row(
     )
 
     if trend == "↑":
-        c.setFillColor(
-            GREEN
-        )
+        c.setFillColor(GREEN)
     elif trend == "↓":
-        c.setFillColor(
-            RED
-        )
+        c.setFillColor(RED)
     else:
-        c.setFillColor(
-            MID_GREY
-        )
+        c.setFillColor(MID_GREY)
 
     c.drawString(
         235,
@@ -794,9 +604,7 @@ def draw_section(
     y,
     width,
 ):
-    c.setFillColor(
-        NAVY
-    )
+    c.setFillColor(NAVY)
 
     c.setFont(
         FONT_BOLD,
@@ -809,9 +617,7 @@ def draw_section(
         title,
     )
 
-    c.setStrokeColor(
-        NAVY
-    )
+    c.setStrokeColor(NAVY)
 
     c.line(
         x,
@@ -829,13 +635,9 @@ def draw_capital_badge(
     h,
     label,
 ):
-    c.setFillColor(
-        LIGHT_NAVY
-    )
+    c.setFillColor(LIGHT_NAVY)
 
-    c.setStrokeColor(
-        LIGHT_NAVY
-    )
+    c.setStrokeColor(LIGHT_NAVY)
 
     c.roundRect(
         x,
@@ -847,9 +649,7 @@ def draw_capital_badge(
         stroke=1,
     )
 
-    c.setFillColor(
-        WHITE
-    )
+    c.setFillColor(WHITE)
 
     c.setFont(
         FONT_BOLD,
@@ -862,9 +662,7 @@ def draw_capital_badge(
         "CAPITAL ALLOCATION",
     )
 
-    text = clean_text(
-        label
-    )
+    text = clean_text(label)
 
     if len(text) > 30:
         text = text[:30]
@@ -876,36 +674,26 @@ def draw_capital_badge(
 
     for word in words:
 
-        candidate = (
-            word
-            if not current
-            else current + " " + word
-        )
+        candidate = word if not current else current + " " + word
 
         if len(candidate) <= 25:
             current = candidate
         else:
 
             if current:
-                lines.append(
-                    current
-                )
+                lines.append(current)
 
             current = word
 
     if current:
-        lines.append(
-            current
-        )
+        lines.append(current)
 
     c.setFont(
         FONT_BOLD,
         10,
     )
 
-    start_y = (
-        y + h / 2 + 4
-    )
+    start_y = y + h / 2 + 4
 
     for line in lines[:3]:
 
@@ -923,9 +711,7 @@ def draw_footer(
     page_number,
     total_pages,
 ):
-    c.setFillColor(
-        MID_GREY
-    )
+    c.setFillColor(MID_GREY)
 
     c.setFont(
         FONT_REGULAR,
@@ -949,28 +735,19 @@ def draw_footer(
 # ONE COMPANY PAGE
 # =========================================================
 
+
 def draw_company_page(
     c,
     row,
     page_number,
     total_pages,
 ):
-    company_name = clean_text(
-        row.get(
-            "company_name"
-        )
-    )
+    company_name = clean_text(row.get("company_name"))
 
-    ticker = clean_text(
-        row.get(
-            "company_id"
-        )
-    )
+    ticker = clean_text(row.get("company_id"))
 
     sector = clean_text(
-        row.get(
-            "sector"
-        ),
+        row.get("sector"),
         "Unknown",
     )
 
@@ -985,15 +762,9 @@ def draw_company_page(
     # Latest year
     # -----------------------------------------------------
 
-    latest_year = fmt_year(
-        row.get(
-            "year"
-        )
-    )
+    latest_year = fmt_year(row.get("year"))
 
-    c.setFillColor(
-        MID_GREY
-    )
+    c.setFillColor(MID_GREY)
 
     c.setFont(
         FONT_REGULAR,
@@ -1014,9 +785,7 @@ def draw_company_page(
 
     gap = 8
 
-    tile_w = (
-        PAGE_W - 72 - 3 * gap
-    ) / 4
+    tile_w = (PAGE_W - 72 - 3 * gap) / 4
 
     draw_info_box(
         c,
@@ -1025,9 +794,7 @@ def draw_company_page(
         tile_w,
         58,
         "ROE",
-        fmt_pct(
-            row.get("roe")
-        ),
+        fmt_pct(row.get("roe")),
     )
 
     draw_info_box(
@@ -1037,9 +804,7 @@ def draw_company_page(
         tile_w,
         58,
         "Net Margin",
-        fmt_pct(
-            row.get("npm")
-        ),
+        fmt_pct(row.get("npm")),
     )
 
     draw_info_box(
@@ -1049,9 +814,7 @@ def draw_company_page(
         tile_w,
         58,
         "Debt / Equity",
-        fmt_x(
-            row.get("de")
-        ),
+        fmt_x(row.get("de")),
     )
 
     draw_info_box(
@@ -1061,9 +824,7 @@ def draw_company_page(
         tile_w,
         58,
         "Revenue CAGR",
-        fmt_pct(
-            row.get("revenue_cagr")
-        ),
+        fmt_pct(row.get("revenue_cagr")),
     )
 
     # -----------------------------------------------------
@@ -1084,13 +845,9 @@ def draw_company_page(
         c,
         trend_y,
         "ROE",
-        fmt_pct(
-            row.get("roe")
-        ),
+        fmt_pct(row.get("roe")),
         clean_text(
-            row.get(
-                "roe_arrow"
-            ),
+            row.get("roe_arrow"),
             "→",
         ),
     )
@@ -1099,13 +856,9 @@ def draw_company_page(
         c,
         trend_y - 28,
         "Net Margin",
-        fmt_pct(
-            row.get("npm")
-        ),
+        fmt_pct(row.get("npm")),
         clean_text(
-            row.get(
-                "npm_arrow"
-            ),
+            row.get("npm_arrow"),
             "→",
         ),
     )
@@ -1114,13 +867,9 @@ def draw_company_page(
         c,
         trend_y - 56,
         "Debt / Equity",
-        fmt_x(
-            row.get("de")
-        ),
+        fmt_x(row.get("de")),
         clean_text(
-            row.get(
-                "de_arrow"
-            ),
+            row.get("de_arrow"),
             "→",
         ),
     )
@@ -1134,13 +883,9 @@ def draw_company_page(
     panel_w = PAGE_W - 356
     panel_h = 135
 
-    c.setFillColor(
-        LIGHT_GREY
-    )
+    c.setFillColor(LIGHT_GREY)
 
-    c.setStrokeColor(
-        BORDER
-    )
+    c.setStrokeColor(BORDER)
 
     c.roundRect(
         panel_x,
@@ -1152,9 +897,7 @@ def draw_company_page(
         stroke=1,
     )
 
-    c.setFillColor(
-        NAVY
-    )
+    c.setFillColor(NAVY)
 
     c.setFont(
         FONT_BOLD,
@@ -1170,11 +913,7 @@ def draw_company_page(
     metrics = [
         (
             "Profit Growth",
-            fmt_pct(
-                row.get(
-                    "profit_cagr"
-                )
-            ),
+            fmt_pct(row.get("profit_cagr")),
         ),
         (
             "Free Cash Flow",
@@ -1182,19 +921,11 @@ def draw_company_page(
         ),
         (
             "CFO Quality",
-            clean_text(
-                row.get(
-                    "cfo_quality"
-                )
-            ),
+            clean_text(row.get("cfo_quality")),
         ),
         (
             "CapEx",
-            clean_text(
-                row.get(
-                    "capex"
-                )
-            ),
+            clean_text(row.get("capex")),
         ),
     ]
 
@@ -1202,9 +933,7 @@ def draw_company_page(
 
     for label, value in metrics:
 
-        c.setFillColor(
-            MID_GREY
-        )
+        c.setFillColor(MID_GREY)
 
         c.setFont(
             FONT_BOLD,
@@ -1217,9 +946,7 @@ def draw_company_page(
             label.upper(),
         )
 
-        c.setFillColor(
-            DARK
-        )
+        c.setFillColor(DARK)
 
         c.setFont(
             FONT_BOLD,
@@ -1251,35 +978,21 @@ def draw_company_page(
     fields = [
         (
             "Distress Flag",
-            clean_text(
-                row.get(
-                    "distress"
-                )
-            ),
+            clean_text(row.get("distress")),
         ),
         (
             "Deleveraging",
-            clean_text(
-                row.get(
-                    "deleveraging"
-                )
-            ),
+            clean_text(row.get("deleveraging")),
         ),
         (
             "Sub-Sector",
-            clean_text(
-                row.get(
-                    "sub_sector"
-                )
-            ),
+            clean_text(row.get("sub_sector")),
         ),
     ]
 
     for label, value in fields:
 
-        c.setFillColor(
-            MID_GREY
-        )
+        c.setFillColor(MID_GREY)
 
         c.setFont(
             FONT_BOLD,
@@ -1292,9 +1005,7 @@ def draw_company_page(
             label,
         )
 
-        c.setFillColor(
-            DARK
-        )
+        c.setFillColor(DARK)
 
         c.setFont(
             FONT_REGULAR,
@@ -1329,11 +1040,7 @@ def draw_company_page(
         PAGE_H - 625,
         245,
         92,
-        clean_text(
-            row.get(
-                "capital_allocation"
-            )
-        ),
+        clean_text(row.get("capital_allocation")),
     )
 
     # -----------------------------------------------------
@@ -1348,9 +1055,7 @@ def draw_company_page(
         PAGE_W - 346,
     )
 
-    c.setFillColor(
-        DARK
-    )
+    c.setFillColor(DARK)
 
     c.setFont(
         FONT_REGULAR,
@@ -1374,11 +1079,7 @@ def draw_company_page(
 
     for word in words:
 
-        candidate = (
-            word
-            if not line
-            else line + " " + word
-        )
+        candidate = word if not line else line + " " + word
 
         # Approximate wrapping for the panel.
         if len(candidate) <= 58:
@@ -1420,6 +1121,7 @@ def draw_company_page(
 # MAIN
 # =========================================================
 
+
 def main():
 
     OUTPUT_DIR.mkdir(
@@ -1443,19 +1145,12 @@ def main():
         capital,
     )
 
-    total_companies = len(
-        summary
-    )
+    total_companies = len(summary)
 
-    print(
-        f"Companies loaded: {total_companies}"
-    )
+    print(f"Companies loaded: {total_companies}")
 
     if total_companies != 92:
-        raise ValueError(
-            f"Expected 92 companies, "
-            f"found {total_companies}"
-        )
+        raise ValueError(f"Expected 92 companies, " f"found {total_companies}")
 
     c = canvas.Canvas(
         str(OUTPUT_FILE),
@@ -1463,9 +1158,7 @@ def main():
         pageCompression=1,
     )
 
-    c.setTitle(
-        "Nifty 100 Portfolio Summary"
-    )
+    c.setTitle("Nifty 100 Portfolio Summary")
 
     for index, (_, row) in enumerate(
         summary.iterrows(),
@@ -1481,14 +1174,9 @@ def main():
 
     c.save()
 
-    print(
-        f"Portfolio summary saved: "
-        f"{OUTPUT_FILE}"
-    )
+    print(f"Portfolio summary saved: " f"{OUTPUT_FILE}")
 
-    print(
-        f"PDF pages: {total_companies}"
-    )
+    print(f"PDF pages: {total_companies}")
 
 
 if __name__ == "__main__":

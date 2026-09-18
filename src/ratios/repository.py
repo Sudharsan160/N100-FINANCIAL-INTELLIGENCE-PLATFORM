@@ -6,14 +6,12 @@ from typing import Any
 
 from src.ratios.calculator import calculate_ratio_row, deduplicate_records
 
-
 DB_PATH = Path("nifty100.db")
 
 
 RATIO_COLUMNS = [
     "company_id",
     "year",
-
     # Day 08
     "net_profit_margin_pct",
     "operating_profit_margin_pct",
@@ -28,7 +26,6 @@ RATIO_COLUMNS = [
     "dividend_payout_ratio_pct",
     "total_debt_cr",
     "cash_from_operations_cr",
-
     # Day 09
     "return_on_assets_pct",
     "pretax_margin_pct",
@@ -41,15 +38,13 @@ RATIO_COLUMNS = [
     "operating_profit_growth_pct",
     "net_profit_growth_pct",
     "eps_growth_pct",
-
     # Day 11 — Cash Flow & Capital Allocation
     "cfo_to_total_debt",
     "free_cash_flow_margin_pct",
     "investing_cash_flow_to_cfo",
     "financing_cash_flow_to_cfo",
     "cash_conversion_ratio",
-     "capital_expenditure_intensity_pct",
-
+    "capital_expenditure_intensity_pct",
     # Day 13 — Bank ROCE Carve-Out
     "roce_pct",
 ]
@@ -125,25 +120,15 @@ def upsert_ratio_row(
 
     columns = ", ".join(RATIO_COLUMNS)
 
-    placeholders = ", ".join(
-        ["?"] * len(RATIO_COLUMNS)
-    )
+    placeholders = ", ".join(["?"] * len(RATIO_COLUMNS))
 
     update_columns = [
-        column
-        for column in RATIO_COLUMNS
-        if column not in {"company_id", "year"}
+        column for column in RATIO_COLUMNS if column not in {"company_id", "year"}
     ]
 
-    updates = ", ".join(
-        f"{column}=excluded.{column}"
-        for column in update_columns
-    )
+    updates = ", ".join(f"{column}=excluded.{column}" for column in update_columns)
 
-    values = [
-        ratio.get(column)
-        for column in RATIO_COLUMNS
-    ]
+    values = [ratio.get(column) for column in RATIO_COLUMNS]
 
     conn.execute(
         f"""
@@ -162,17 +147,11 @@ def build_ratio_rows(
 ) -> list[dict[str, Any]]:
     """Build one ratio row per company/year supported by source data."""
 
-    pnl_groups = canonicalize_groups(
-        fetch_grouped_records(conn, "profitandloss")
-    )
+    pnl_groups = canonicalize_groups(fetch_grouped_records(conn, "profitandloss"))
 
-    bs_groups = canonicalize_groups(
-        fetch_grouped_records(conn, "balancesheet")
-    )
+    bs_groups = canonicalize_groups(fetch_grouped_records(conn, "balancesheet"))
 
-    cf_groups = canonicalize_groups(
-        fetch_grouped_records(conn, "cashflow")
-    )
+    cf_groups = canonicalize_groups(fetch_grouped_records(conn, "cashflow"))
 
     companies = {
         row["id"]: row["face_value"]
@@ -185,18 +164,10 @@ def build_ratio_rows(
 
     available_keys = set(pnl_groups) | set(bs_groups)
 
-    for company_id in companies:
-        company_keys = sorted(
-            key
-            for key in available_keys
-            if key[0] == company_id
-        )
+    for company_id, face_value in companies.items():
+        company_keys = sorted(key for key in available_keys if key[0] == company_id)
 
-        pnl_company_keys = sorted(
-            key
-            for key in pnl_groups
-            if key[0] == company_id
-        )
+        pnl_company_keys = sorted(key for key in pnl_groups if key[0] == company_id)
 
         for key in company_keys:
             profit_loss = pnl_groups.get(key)
@@ -229,7 +200,7 @@ def build_ratio_rows(
                     "total_assets": None,
                 }
 
-            profit_loss["face_value"] = companies[company_id]
+            profit_loss["face_value"] = face_value
 
             previous_profit_loss = None
 
@@ -237,12 +208,8 @@ def build_ratio_rows(
                 current_position = pnl_company_keys.index(key)
 
                 if current_position > 0:
-                    previous_key = pnl_company_keys[
-                        current_position - 1
-                    ]
-                    previous_profit_loss = pnl_groups.get(
-                        previous_key
-                    )
+                    previous_key = pnl_company_keys[current_position - 1]
+                    previous_profit_loss = pnl_groups.get(previous_key)
 
             ratio_rows.append(
                 calculate_ratio_row(
@@ -283,10 +250,7 @@ def rebuild_financial_ratios(
             columns = ", ".join(RATIO_COLUMNS)
             placeholders = ", ".join(["?"] * len(RATIO_COLUMNS))
 
-            values = [
-                ratio.get(column)
-                for column in RATIO_COLUMNS
-            ]
+            values = [ratio.get(column) for column in RATIO_COLUMNS]
 
             conn.execute(
                 f"""

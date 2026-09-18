@@ -1,8 +1,6 @@
 ﻿from __future__ import annotations
 
 import math
-from typing import Optional
-
 
 Number = float | int | None
 
@@ -11,7 +9,7 @@ def calculate_cagr(
     start_value: Number,
     end_value: Number,
     periods: Number,
-) -> Optional[float]:
+) -> float | None:
     """
     Calculate CAGR as a percentage.
 
@@ -49,7 +47,7 @@ def revenue_cagr(
     start_revenue: Number,
     end_revenue: Number,
     periods: Number,
-) -> Optional[float]:
+) -> float | None:
     """Revenue CAGR (%) for a positive starting revenue."""
     return calculate_cagr(
         start_revenue,
@@ -62,7 +60,7 @@ def profit_cagr(
     start_profit: Number,
     end_profit: Number,
     periods: Number,
-) -> Optional[float]:
+) -> float | None:
     """Net-profit CAGR (%) with the same edge-case policy."""
     return calculate_cagr(
         start_profit,
@@ -75,7 +73,7 @@ def eps_cagr(
     start_eps: Number,
     end_eps: Number,
     periods: Number,
-) -> Optional[float]:
+) -> float | None:
     """EPS CAGR (%) with the same edge-case policy."""
     return calculate_cagr(
         start_eps,

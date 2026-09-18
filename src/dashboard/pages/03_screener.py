@@ -3,9 +3,10 @@ import streamlit as st
 
 from src.dashboard.utils.db import get_companies, get_ratios
 
-
 st.title("Nifty 100 Screener")
-st.caption("Filter companies using financial quality, growth, valuation, and leverage metrics.")
+st.caption(
+    "Filter companies using financial quality, growth, valuation, and leverage metrics."
+)
 
 
 # ---------------------------------------------------------
@@ -37,8 +38,7 @@ if ratios.empty:
 ratios["year"] = pd.to_numeric(ratios["year"], errors="coerce")
 
 ratios = (
-    ratios
-    .sort_values(["company_id", "year"])
+    ratios.sort_values(["company_id", "year"])
     .groupby("company_id", as_index=False)
     .tail(1)
 )
@@ -106,8 +106,7 @@ try:
     market["year"] = pd.to_numeric(market["year"], errors="coerce")
 
     market = (
-        market
-        .sort_values(["company_id", "year"])
+        market.sort_values(["company_id", "year"])
         .groupby("company_id", as_index=False)
         .tail(1)
     )
@@ -125,7 +124,7 @@ try:
         how="left",
     )
 
-except Exception:
+except Exception:  # noqa: BLE001
     df["pe_ratio"] = pd.NA
     df["pb_ratio"] = pd.NA
     df["dividend_yield_pct"] = pd.NA
@@ -145,8 +144,7 @@ try:
     )
 
     composite = (
-        composite
-        .sort_values(["company_id", "year"])
+        composite.sort_values(["company_id", "year"])
         .groupby("company_id", as_index=False)
         .tail(1)
     )
@@ -164,7 +162,7 @@ try:
         how="left",
     )
 
-except Exception:
+except Exception:  # noqa: BLE001
     df["composite_quality_score"] = pd.NA
     df["revenue_cagr_5yr_pct"] = pd.NA
     df["pat_cagr_5yr_pct"] = pd.NA
@@ -362,9 +360,7 @@ def apply_min(data, column, value):
         errors="coerce",
     )
 
-    return data[
-        values.fillna(float("-inf")) >= value
-    ]
+    return data[values.fillna(float("-inf")) >= value]
 
 
 def apply_max(data, column, value):
@@ -376,9 +372,7 @@ def apply_max(data, column, value):
         errors="coerce",
     )
 
-    return data[
-        values.fillna(float("inf")) <= value
-    ]
+    return data[values.fillna(float("inf")) <= value]
 
 
 filtered = apply_min(
@@ -445,9 +439,7 @@ filtered = apply_min(
 # ---------------------------------------------------------
 # Results
 # ---------------------------------------------------------
-st.subheader(
-    f"{len(filtered)} companies match your filters"
-)
+st.subheader(f"{len(filtered)} companies match your filters")
 
 visible_columns = [
     "company_id",
@@ -466,10 +458,7 @@ visible_columns = [
     "interest_coverage",
 ]
 
-visible_columns = [
-    col for col in visible_columns
-    if col in filtered.columns
-]
+visible_columns = [col for col in visible_columns if col in filtered.columns]
 
 result = filtered[visible_columns].copy()
 

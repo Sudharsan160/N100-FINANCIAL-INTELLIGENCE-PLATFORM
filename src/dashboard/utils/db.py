@@ -1,19 +1,15 @@
-from pathlib import Path
 import os
 import sqlite3
-from typing import Optional
+from pathlib import Path
 
 import pandas as pd
 import streamlit as st
-
 
 # Project root:
 # C:\COLLEGE\Projects\N100 FINANCIAL INTELLIGENCE PLATFORM
 ROOT_DIR = Path(__file__).resolve().parents[3]
 
-DB_PATH = Path(
-    os.getenv("DB_PATH", str(ROOT_DIR / "nifty100.db"))
-)
+DB_PATH = Path(os.getenv("DB_PATH", str(ROOT_DIR / "nifty100.db")))
 
 
 def _get_connection() -> sqlite3.Connection:
@@ -50,7 +46,7 @@ def get_companies() -> pd.DataFrame:
 @st.cache_data(ttl=600)
 def get_ratios(
     ticker: str,
-    year: Optional[int] = None,
+    year: int | None = None,
 ) -> pd.DataFrame:
     """
     Return financial ratios for a company.

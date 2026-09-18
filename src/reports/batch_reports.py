@@ -1,10 +1,9 @@
-from pathlib import Path
 import sqlite3
+from pathlib import Path
 
 import pandas as pd
 
 from src.reports.tearsheet import generate_tearsheet
-
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -49,11 +48,7 @@ def load_companies():
         how="left",
     )
 
-    result["financial_years"] = (
-        result["financial_years"]
-        .fillna(0)
-        .astype(int)
-    )
+    result["financial_years"] = result["financial_years"].fillna(0).astype(int)
 
     return result
 
@@ -86,11 +81,9 @@ def main():
 
             successes.append(ticker)
 
-            print(
-                f"[OK] {ticker}: {output.name}"
-            )
+            print(f"[OK] {ticker}: {output.name}")
 
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             failures.append(
                 {
                     "company_id": ticker,
@@ -100,9 +93,7 @@ def main():
                 }
             )
 
-            print(
-                f"[ERROR] {ticker}: {exc}"
-            )
+            print(f"[ERROR] {ticker}: {exc}")
 
     # No companies are intentionally skipped in this version.
     pd.DataFrame(
@@ -117,9 +108,7 @@ def main():
         index=False,
     )
 
-    pd.DataFrame(
-        failures
-    ).to_csv(
+    pd.DataFrame(failures).to_csv(
         FAILURE_FILE,
         index=False,
     )
@@ -130,13 +119,9 @@ def main():
     print(f"Failed: {len(failures)}")
     print("Skipped: 0")
 
-    print(
-        f"\nSkipped file: {SKIPPED_FILE}"
-    )
+    print(f"\nSkipped file: {SKIPPED_FILE}")
 
-    print(
-        f"Failure file: {FAILURE_FILE}"
-    )
+    print(f"Failure file: {FAILURE_FILE}")
 
 
 if __name__ == "__main__":

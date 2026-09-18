@@ -20,10 +20,10 @@ from src.etl.validator import (
     validate_year_coverage,
 )
 
-
 # ============================================================
 # DQ-01: Primary-key uniqueness
 # ============================================================
+
 
 def test_dq01_company_id_duplicate():
     df = pd.DataFrame({"company_id": [1, 1, 2]})
@@ -56,6 +56,7 @@ def test_dq01_no_duplicate_company_id():
 # ============================================================
 # DQ-02: (company_id, year) uniqueness
 # ============================================================
+
 
 def test_dq02_company_year_duplicate():
     df = pd.DataFrame(
@@ -97,6 +98,7 @@ def test_dq02_no_duplicate_company_year():
 # DQ-03: Foreign-key integrity
 # ============================================================
 
+
 def test_dq03_invalid_foreign_key():
     child = pd.DataFrame({"company_id": [1, 2, 99]})
     parent = pd.DataFrame({"company_id": [1, 2, 3]})
@@ -130,6 +132,7 @@ def test_dq03_valid_foreign_keys():
 # ============================================================
 # DQ-04: Balance-sheet balance < 1%
 # ============================================================
+
 
 def test_dq04_unbalanced_balance_sheet():
     df = pd.DataFrame(
@@ -177,6 +180,7 @@ def test_dq04_balanced_balance_sheet():
 # DQ-05: Operating profit margin cross-check
 # ============================================================
 
+
 def test_dq05_opm_mismatch():
     df = pd.DataFrame(
         {
@@ -223,6 +227,7 @@ def test_dq05_correct_opm():
 # DQ-06: Positive sales
 # ============================================================
 
+
 def test_dq06_negative_sales():
     df = pd.DataFrame(
         {
@@ -264,6 +269,7 @@ def test_dq06_positive_sales():
 # ============================================================
 # DQ-07: Net cash consistency
 # ============================================================
+
 
 def test_dq07_net_cash_mismatch():
     df = pd.DataFrame(
@@ -311,6 +317,7 @@ def test_dq07_correct_net_cash():
 # DQ-08: Tax-rate sanity
 # ============================================================
 
+
 def test_dq08_invalid_tax_rate():
     df = pd.DataFrame(
         {
@@ -352,6 +359,7 @@ def test_dq08_valid_tax_rate():
 # ============================================================
 # DQ-09: Dividend cap
 # ============================================================
+
 
 def test_dq09_dividend_cap():
     df = pd.DataFrame(
@@ -395,6 +403,7 @@ def test_dq09_valid_dividend_ratio():
 # DQ-10: URL validity
 # ============================================================
 
+
 def test_dq10_invalid_url():
     df = pd.DataFrame(
         {
@@ -434,6 +443,7 @@ def test_dq10_valid_url():
 # ============================================================
 # DQ-11: EPS sign consistency
 # ============================================================
+
 
 def test_dq11_eps_sign_mismatch():
     df = pd.DataFrame(
@@ -479,6 +489,7 @@ def test_dq11_eps_sign_consistent():
 # DQ-12: BSE balance check
 # ============================================================
 
+
 def test_dq12_negative_bse_balance():
     df = pd.DataFrame(
         {
@@ -523,6 +534,7 @@ def test_dq12_valid_bse_balance():
 # DQ-13: Year coverage
 # ============================================================
 
+
 def test_dq13_insufficient_year_coverage():
     df = pd.DataFrame(
         {
@@ -565,6 +577,7 @@ def test_dq13_sufficient_year_coverage():
 # DQ-14: Company coverage
 # ============================================================
 
+
 def test_dq14_missing_company():
     df = pd.DataFrame(
         {
@@ -604,6 +617,7 @@ def test_dq14_all_companies_present():
 # ============================================================
 # DQ-15: Duplicate records
 # ============================================================
+
 
 def test_dq15_duplicate_rows():
     df = pd.DataFrame(
@@ -646,6 +660,7 @@ def test_dq15_no_duplicate_rows():
 # ============================================================
 # DQ-16: Required-field completeness
 # ============================================================
+
 
 def test_dq16_required_field_null():
     df = pd.DataFrame(
@@ -690,6 +705,7 @@ def test_dq16_required_fields_present():
 # ============================================================
 # Integration test
 # ============================================================
+
 
 def test_valid_data_has_no_basic_failures():
     datasets = {

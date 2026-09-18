@@ -1,15 +1,12 @@
 ﻿from __future__ import annotations
 
-from typing import Optional
-
-
 Number = float | int | None
 
 
 def safe_divide(
     numerator: Number,
     denominator: Number,
-) -> Optional[float]:
+) -> float | None:
     """Safely divide two numbers."""
     if numerator is None or denominator is None:
         return None
@@ -25,7 +22,7 @@ def safe_divide(
 def net_profit_margin(
     net_profit: Number,
     revenue: Number,
-) -> Optional[float]:
+) -> float | None:
     """Net profit margin (%) = Net Profit / Revenue × 100."""
     value = safe_divide(net_profit, revenue)
 
@@ -35,7 +32,7 @@ def net_profit_margin(
 def operating_profit_margin(
     operating_profit: Number,
     revenue: Number,
-) -> Optional[float]:
+) -> float | None:
     """Operating profit margin (%) = Operating Profit / Revenue × 100."""
     value = safe_divide(operating_profit, revenue)
 
@@ -45,7 +42,7 @@ def operating_profit_margin(
 def return_on_equity(
     net_profit: Number,
     equity: Number,
-) -> Optional[float]:
+) -> float | None:
     """ROE (%) = Net Profit / Equity × 100."""
     value = safe_divide(net_profit, equity)
 
@@ -55,7 +52,7 @@ def return_on_equity(
 def return_on_assets(
     net_profit: Number,
     total_assets: Number,
-) -> Optional[float]:
+) -> float | None:
     """ROA (%) = Net Profit / Total Assets × 100."""
     value = safe_divide(net_profit, total_assets)
 
@@ -65,7 +62,7 @@ def return_on_assets(
 def debt_to_equity(
     debt: Number,
     equity: Number,
-) -> Optional[float]:
+) -> float | None:
     """Debt-to-equity = Total Debt / Equity."""
     return safe_divide(debt, equity)
 
@@ -73,7 +70,7 @@ def debt_to_equity(
 def debt_ratio(
     debt: Number,
     total_assets: Number,
-) -> Optional[float]:
+) -> float | None:
     """Debt ratio = Total Debt / Total Assets."""
     return safe_divide(debt, total_assets)
 
@@ -81,7 +78,7 @@ def debt_ratio(
 def equity_ratio(
     equity: Number,
     total_assets: Number,
-) -> Optional[float]:
+) -> float | None:
     """Equity ratio = Equity / Total Assets."""
     return safe_divide(equity, total_assets)
 
@@ -89,7 +86,7 @@ def equity_ratio(
 def financial_leverage(
     total_assets: Number,
     equity: Number,
-) -> Optional[float]:
+) -> float | None:
     """Financial leverage = Total Assets / Equity."""
     return safe_divide(total_assets, equity)
 
@@ -97,7 +94,7 @@ def financial_leverage(
 def asset_turnover(
     revenue: Number,
     total_assets: Number,
-) -> Optional[float]:
+) -> float | None:
     """Asset turnover = Revenue / Total Assets."""
     return safe_divide(revenue, total_assets)
 
@@ -105,7 +102,7 @@ def asset_turnover(
 def interest_coverage(
     operating_profit: Number,
     interest: Number,
-) -> Optional[float]:
+) -> float | None:
     """Interest coverage = Operating Profit / Interest."""
     return safe_divide(operating_profit, interest)
 
@@ -113,7 +110,7 @@ def interest_coverage(
 def pretax_margin(
     profit_before_tax: Number,
     revenue: Number,
-) -> Optional[float]:
+) -> float | None:
     """Pretax margin (%) = PBT / Revenue × 100."""
     value = safe_divide(profit_before_tax, revenue)
 
@@ -123,7 +120,7 @@ def pretax_margin(
 def operating_cash_flow_margin(
     operating_cash_flow: Number,
     revenue: Number,
-) -> Optional[float]:
+) -> float | None:
     """Operating cash flow margin (%) = CFO / Revenue × 100."""
     value = safe_divide(operating_cash_flow, revenue)
 
@@ -133,7 +130,7 @@ def operating_cash_flow_margin(
 def cash_flow_to_net_profit(
     operating_cash_flow: Number,
     net_profit: Number,
-) -> Optional[float]:
+) -> float | None:
     """Cash flow to net profit = CFO / Net Profit."""
     return safe_divide(operating_cash_flow, net_profit)
 
@@ -143,7 +140,7 @@ def return_on_capital_employed(
     equity: Number,
     total_debt: Number,
     is_bank: bool = False,
-) -> Optional[float]:
+) -> float | None:
     """
     ROCE (%) = Operating Profit / Capital Employed × 100.
 

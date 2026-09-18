@@ -7,15 +7,12 @@ Loads the 12 supplied N100 Excel source files and normalizes:
 - ticker/company identifiers
 """
 
+import sqlite3
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
-import os
-import sqlite3
 
 from src.etl.normaliser import normalize_ticker, normalize_year
-
 
 RAW_DATA_DIR = Path("data/raw")
 
@@ -55,7 +52,7 @@ def get_header_row(file_path: str | Path) -> int:
 
 def load_excel(
     file_path: str | Path,
-    sheet_name: Optional[str | int] = 0,
+    sheet_name: str | int | None = 0,
 ) -> pd.DataFrame:
     """
     Load one N100 Excel workbook using its correct header row.
@@ -82,8 +79,7 @@ def load_excel(
 
     # Standardize column names.
     df.columns = [
-        str(column).strip().lower().replace(" ", "_")
-        for column in df.columns
+        str(column).strip().lower().replace(" ", "_") for column in df.columns
     ]
 
     return df
@@ -116,7 +112,7 @@ def normalize_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 
 def load_and_normalize(
     file_path: str | Path,
-    sheet_name: Optional[str | int] = 0,
+    sheet_name: str | int | None = 0,
 ) -> pd.DataFrame:
     """Load and normalize one workbook."""
     df = load_excel(
@@ -134,20 +130,15 @@ def list_excel_files(
     directory = Path(data_dir)
 
     if not directory.exists():
-        raise FileNotFoundError(
-            f"Data directory not found: {directory}"
-        )
+        raise FileNotFoundError(f"Data directory not found: {directory}")
 
     if not directory.is_dir():
-        raise NotADirectoryError(
-            f"Not a directory: {directory}"
-        )
+        raise NotADirectoryError(f"Not a directory: {directory}")
 
     return sorted(
         path
         for path in directory.iterdir()
-        if path.is_file()
-        and path.suffix.lower() in {".xlsx", ".xls", ".xlsm"}
+        if path.is_file() and path.suffix.lower() in {".xlsx", ".xls", ".xlsm"}
     )
 
 
@@ -167,6 +158,7 @@ def load_all_sources(
         datasets[key] = load_and_normalize(path)
 
     return datasets
+
 
 def load_to_sqlite(
     db_path: str | Path = "nifty100.db",
@@ -234,6 +226,7 @@ def load_to_sqlite(
 
     finally:
         connection.close()
+
 
 if __name__ == "__main__":
     print("N100 Excel loader is ready.")

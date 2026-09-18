@@ -41,15 +41,9 @@ def test_quality_compounder(engine):
     assert (result["free_cash_flow_cr"] > 0).all()
     assert (result["revenue_cagr_5yr"] > 10).all()
 
-    non_financials = result[
-        ~result["broad_sector"]
-        .str.casefold()
-        .eq("financials")
-    ]
+    non_financials = result[~result["broad_sector"].str.casefold().eq("financials")]
 
-    assert (
-        non_financials["debt_to_equity"] < 1
-    ).all()
+    assert (non_financials["debt_to_equity"] < 1).all()
 
 
 def test_value_pick_conditions(engine):
@@ -60,15 +54,9 @@ def test_value_pick_conditions(engine):
     assert (result["pb_ratio"] < 3).all()
     assert (result["dividend_yield_pct"] > 1).all()
 
-    non_financials = result[
-        ~result["broad_sector"]
-        .str.casefold()
-        .eq("financials")
-    ]
+    non_financials = result[~result["broad_sector"].str.casefold().eq("financials")]
 
-    assert (
-        non_financials["debt_to_equity"] < 2
-    ).all()
+    assert (non_financials["debt_to_equity"] < 2).all()
 
 
 def test_growth_accelerator(engine):
@@ -78,15 +66,9 @@ def test_growth_accelerator(engine):
     assert (result["pat_cagr_5yr"] > 20).all()
     assert (result["revenue_cagr_5yr"] > 15).all()
 
-    non_financials = result[
-        ~result["broad_sector"]
-        .str.casefold()
-        .eq("financials")
-    ]
+    non_financials = result[~result["broad_sector"].str.casefold().eq("financials")]
 
-    assert (
-        non_financials["debt_to_equity"] < 2
-    ).all()
+    assert (non_financials["debt_to_equity"] < 2).all()
 
 
 def test_dividend_champion(engine):
@@ -94,9 +76,7 @@ def test_dividend_champion(engine):
 
     assert len(result) == 29
     assert (result["dividend_yield_pct"] > 2).all()
-    assert (
-        result["dividend_payout_ratio_pct"] < 80
-    ).all()
+    assert (result["dividend_payout_ratio_pct"] < 80).all()
     assert (result["free_cash_flow_cr"] > 0).all()
 
 
@@ -121,8 +101,6 @@ def test_presets_are_sorted(engine):
     for preset_name in PRESETS:
         result = engine.preset(preset_name)
 
-        scores = result[
-            "composite_quality_score"
-        ].dropna()
+        scores = result["composite_quality_score"].dropna()
 
         assert scores.is_monotonic_decreasing

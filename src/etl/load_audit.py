@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pandas as pd
 
-
 TABLES = [
     "analysis",
     "balancesheet",
@@ -48,9 +47,7 @@ def create_load_audit(
 
     try:
         for table in TABLES:
-            actual = connection.execute(
-                f"SELECT COUNT(*) FROM [{table}]"
-            ).fetchone()[0]
+            actual = connection.execute(f"SELECT COUNT(*) FROM [{table}]").fetchone()[0]
 
             expected = EXPECTED_COUNTS[table]
 

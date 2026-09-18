@@ -1,11 +1,9 @@
 ﻿from src.analytics.cagr import (
     calculate_cagr,
-    cagr_status,
     eps_cagr,
     profit_cagr,
     revenue_cagr,
 )
-
 from src.analytics.cashflow_kpis import (
     capex_intensity,
     cash_flow_to_debt,
@@ -15,7 +13,6 @@ from src.analytics.cashflow_kpis import (
     free_cash_flow_margin,
     investing_to_cfo,
 )
-
 from src.analytics.ratios import (
     asset_turnover,
     debt_to_equity,

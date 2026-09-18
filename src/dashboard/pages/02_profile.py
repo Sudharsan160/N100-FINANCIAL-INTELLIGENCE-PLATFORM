@@ -7,11 +7,10 @@ import streamlit as st
 
 from src.dashboard.utils.db import (
     get_companies,
-    get_ratios,
     get_pl,
     get_pros_cons,
+    get_ratios,
 )
-
 
 ROOT_DIR = Path(__file__).resolve().parents[3]
 DB_PATH = ROOT_DIR / "nifty100.db"
@@ -35,10 +34,9 @@ def search_companies(query: str) -> pd.DataFrame:
 
     query = query.lower().strip()
 
-    mask = (
-        companies["company_id"].astype(str).str.lower().str.contains(query, na=False)
-        | companies["company_name"].astype(str).str.lower().str.contains(query, na=False)
-    )
+    mask = companies["company_id"].astype(str).str.lower().str.contains(
+        query, na=False
+    ) | companies["company_name"].astype(str).str.lower().str.contains(query, na=False)
 
     return companies.loc[mask].head(10)
 
@@ -102,10 +100,7 @@ if matches.empty:
     st.stop()
 
 
-options = [
-    f"{row.company_id} — {row.company_name}"
-    for row in matches.itertuples()
-]
+options = [f"{row.company_id} — {row.company_name}" for row in matches.itertuples()]
 
 selected_label = st.selectbox(
     "Select company",
@@ -115,9 +110,7 @@ selected_label = st.selectbox(
 selected_ticker = selected_label.split(" — ", 1)[0]
 
 
-company = companies[
-    companies["company_id"].astype(str) == selected_ticker
-].iloc[0]
+company = companies[companies["company_id"].astype(str) == selected_ticker].iloc[0]
 
 
 # ---------------------------------------------------------
@@ -218,9 +211,7 @@ with k5:
             end = pl.iloc[-1]["sales"]
 
             if start > 0 and end > 0:
-                revenue_cagr = (
-                    (end / start) ** (1 / 5) - 1
-                ) * 100
+                revenue_cagr = ((end / start) ** (1 / 5) - 1) * 100
 
     st.metric(
         "Revenue CAGR 5Y",
@@ -251,11 +242,7 @@ else:
     pl["sales"] = pd.to_numeric(pl["sales"], errors="coerce")
     pl["net_profit"] = pd.to_numeric(pl["net_profit"], errors="coerce")
 
-    pl = (
-        pl.dropna(subset=["year"])
-        .sort_values("year")
-        .tail(10)
-    )
+    pl = pl.dropna(subset=["year"]).sort_values("year").tail(10)
 
     fig = go.Figure()
 
@@ -280,7 +267,7 @@ else:
         height=450,
         xaxis_title="Year",
         yaxis_title="Amount (₹ Cr)",
-        margin=dict(l=10, r=10, t=20, b=10),
+        margin={"l": 10, "r": 10, "t": 20, "b": 10},
     )
 
     st.plotly_chart(
@@ -312,11 +299,7 @@ trend["roce_pct"] = pd.to_numeric(
     errors="coerce",
 )
 
-trend = (
-    trend.dropna(subset=["year"])
-    .sort_values("year")
-    .tail(10)
-)
+trend = trend.dropna(subset=["year"]).sort_values("year").tail(10)
 
 if trend.empty:
     st.info("ROE/ROCE trend data is unavailable.")
@@ -344,14 +327,14 @@ else:
 
     fig.update_layout(
         height=450,
-        xaxis=dict(title="Year"),
-        yaxis=dict(title="ROE (%)"),
-        yaxis2=dict(
-            title="ROCE (%)",
-            overlaying="y",
-            side="right",
-        ),
-        margin=dict(l=10, r=10, t=20, b=10),
+        xaxis={"title": "Year"},
+        yaxis={"title": "ROE (%)"},
+        yaxis2={
+            "title": "ROCE (%)",
+            "overlaying": "y",
+            "side": "right",
+        },
+        margin={"l": 10, "r": 10, "t": 20, "b": 10},
     )
 
     st.plotly_chart(
@@ -409,6 +392,4 @@ else:
             st.info("No cons available.")
 
 
-st.caption(
-    "Data source: Nifty 100 SQLite database."
-)
+st.caption("Data source: Nifty 100 SQLite database.")

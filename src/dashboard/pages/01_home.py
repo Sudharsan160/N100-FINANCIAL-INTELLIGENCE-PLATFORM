@@ -7,7 +7,6 @@ import streamlit as st
 
 from src.dashboard.utils.db import get_companies, get_ratios, get_sectors
 
-
 ROOT_DIR = Path(__file__).resolve().parents[3]
 DB_PATH = ROOT_DIR / "nifty100.db"
 COMPOSITE_PATH = ROOT_DIR / "output" / "composite_scores.csv"
@@ -42,7 +41,7 @@ def load_market_cap(year):
                 conn,
                 params=[year],
             )
-    except Exception:
+    except Exception:  # noqa: BLE001
         return pd.DataFrame()
 
 
@@ -61,9 +60,13 @@ else:
 # ---------------------------------------------------------
 # Year selector
 # ---------------------------------------------------------
-years = sorted(
-    pd.to_numeric(composite["year"], errors="coerce").dropna().astype(int).unique()
-) if not composite.empty else [2024]
+years = (
+    sorted(
+        pd.to_numeric(composite["year"], errors="coerce").dropna().astype(int).unique()
+    )
+    if not composite.empty
+    else [2024]
+)
 
 selected_year = st.sidebar.selectbox(
     "Analysis Year",
@@ -97,11 +100,7 @@ for company_id in companies["company_id"].astype(str):
     if not df.empty:
         ratio_frames.append(df)
 
-ratios = (
-    pd.concat(ratio_frames, ignore_index=True)
-    if ratio_frames
-    else pd.DataFrame()
-)
+ratios = pd.concat(ratio_frames, ignore_index=True) if ratio_frames else pd.DataFrame()
 
 
 # ---------------------------------------------------------
@@ -114,13 +113,9 @@ market = load_market_cap(selected_year)
 # KPI calculations
 # ---------------------------------------------------------
 if not selected.empty:
-    avg_roe = pd.to_numeric(
-        selected["return_on_equity_pct"], errors="coerce"
-    ).mean()
+    avg_roe = pd.to_numeric(selected["return_on_equity_pct"], errors="coerce").mean()
 
-    median_de = pd.to_numeric(
-        selected["debt_to_equity"], errors="coerce"
-    ).median()
+    median_de = pd.to_numeric(selected["debt_to_equity"], errors="coerce").median()
 
     median_revenue_cagr = pd.to_numeric(
         selected["revenue_cagr_5yr_pct"], errors="coerce"
@@ -186,9 +181,7 @@ with left:
         )
 
         sector_counts["broad_sector"] = (
-            sector_counts["broad_sector"]
-            .fillna("Unknown")
-            .astype(str)
+            sector_counts["broad_sector"].fillna("Unknown").astype(str)
         )
 
         fig = px.pie(
@@ -200,7 +193,7 @@ with left:
 
         fig.update_layout(
             height=450,
-            margin=dict(l=10, r=10, t=20, b=10),
+            margin={"l": 10, "r": 10, "t": 20, "b": 10},
         )
 
         st.plotly_chart(fig, use_container_width=True)

@@ -1,0 +1,4 @@
+company_id,broad_sector,field,value,z_score,severity,issue,cluster_id,cluster_name
+INDIGO,Consumer Discretionary,return_on_equity_pct,892.568306010929,3.6029637946835535,HIGH,Absolute within-sector Z-score > 3,3,High-Quality Compounders
+ADANIGREEN,Energy,debt_to_equity,6.595281675818589,3.2615183991473167,HIGH,Absolute within-sector Z-score > 3,1,Defensive Quality
+PNB,Financials,return_on_equity_pct,61.320565191187306,3.3259924548704793,HIGH,Absolute within-sector Z-score > 3,1,Defensive Quality

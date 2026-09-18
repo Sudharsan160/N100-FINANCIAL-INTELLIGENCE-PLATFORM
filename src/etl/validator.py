@@ -24,7 +24,6 @@ from typing import Any
 
 import pandas as pd
 
-
 CRITICAL = "CRITICAL"
 WARNING = "WARNING"
 
@@ -119,7 +118,7 @@ def validate_fk_integrity(
         add_failure(
             failures,
             "DQ-03",
-            WARNING,  
+            WARNING,
             child_table,
             f"Invalid foreign key: {row[child_key]}",
             row.get("company_id"),
@@ -148,7 +147,7 @@ def validate_sales_positive(
             f"Sales must be positive, found {row[column]}",
             row.get("company_id"),
             row.get("year"),
-)
+        )
 
 
 def validate_balance_sheet(
@@ -175,9 +174,7 @@ def validate_balance_sheet(
         if denominator == 0:
             continue
 
-        difference_pct = (
-            abs(assets - (liabilities + equity)) / denominator
-        ) * 100
+        difference_pct = (abs(assets - (liabilities + equity)) / denominator) * 100
 
         if difference_pct >= 1:
             add_failure(
@@ -273,8 +270,7 @@ def validate_tax_rate(
         return
 
     invalid_rows = df[
-        df["tax_rate"].notna()
-        & ((df["tax_rate"] < -100) | (df["tax_rate"] > 100))
+        df["tax_rate"].notna() & ((df["tax_rate"] < -100) | (df["tax_rate"] > 100))
     ]
 
     for _, row in invalid_rows.iterrows():
@@ -299,8 +295,7 @@ def validate_dividend_cap(
         return
 
     invalid_rows = df[
-        df["dividend_payout_ratio"].notna()
-        & (df["dividend_payout_ratio"] > 100)
+        df["dividend_payout_ratio"].notna() & (df["dividend_payout_ratio"] > 100)
     ]
 
     for _, row in invalid_rows.iterrows():
@@ -482,9 +477,7 @@ def validate_required_fields(
     failures: list[dict[str, Any]],
 ) -> None:
     """DQ-16: Check required fields for null values."""
-    existing_columns = [
-        column for column in required_columns if column in df.columns
-    ]
+    existing_columns = [column for column in required_columns if column in df.columns]
 
     if not existing_columns:
         return
@@ -527,17 +520,16 @@ def validate_all(
     for table_name, df in datasets.items():
         # DQ-01: primary-key uniqueness for companies.
         if "id" in df.columns:
-         validate_pk_uniqueness(
-        df,
-        ["id"],
-        table_name,
-        failures,
-    )
+            validate_pk_uniqueness(
+                df,
+                ["id"],
+                table_name,
+                failures,
+            )
 
         # DQ-02: company + year uniqueness only for selected tables.
-        if (
-            table_name in company_year_unique_tables
-            and {"company_id", "year"}.issubset(df.columns)
+        if table_name in company_year_unique_tables and {"company_id", "year"}.issubset(
+            df.columns
         ):
             validate_company_year_pk(
                 df,
@@ -630,10 +622,7 @@ def validate_all(
         expected_ids = set(companies["id"].dropna())
 
         for table_name, df in datasets.items():
-            if (
-                table_name != "companies"
-                and "company_id" in df.columns
-            ):
+            if table_name != "companies" and "company_id" in df.columns:
                 validate_fk_integrity(
                     df,
                     companies,
@@ -675,7 +664,7 @@ def validate_all(
     )
 
     return result
-    
+
 
 if __name__ == "__main__":
     print("N100 data-quality validator is ready.")

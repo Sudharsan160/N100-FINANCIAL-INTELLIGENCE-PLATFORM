@@ -224,7 +224,7 @@ else:
 
     st.plotly_chart(
         fig,
-        use_container_width=True,
+        width="stretch",
     )
 
 
@@ -277,8 +277,9 @@ else:
 
     st.plotly_chart(
         fig_kpi,
-        use_container_width=True,
+        width="stretch",
     )
 
 
 st.caption(f"Companies in selected sector: {len(sector_companies)}")
+

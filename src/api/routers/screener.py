@@ -29,11 +29,7 @@ def calculate_cagr(start_value, end_value, years=5):
 
         return (((end_value / start_value) ** (1 / years)) - 1) * 100
 
-    except (
-        TypeError,
-        ValueError,
-        ZeroDivisionError,
-    ):
+    except (TypeError, ValueError, ZeroDivisionError):
         return None
 
 
@@ -67,7 +63,11 @@ def get_latest_cagr(conn, company_id):
         latest = rows[-1]
 
         earlier = next(
-            (row for row in rows if row["year"] == latest["year"] - 5),
+            (
+                row
+                for row in rows
+                if row["year"] == latest["year"] - 5
+            ),
             None,
         )
 
@@ -86,7 +86,11 @@ def get_latest_cagr(conn, company_id):
         latest = ratio_rows[-1]
 
         earlier = next(
-            (row for row in ratio_rows if row["year"] == latest["year"] - 5),
+            (
+                row
+                for row in ratio_rows
+                if row["year"] == latest["year"] - 5
+            ),
             None,
         )
 
@@ -108,9 +112,16 @@ def screener(
     min_rev_cagr_5yr: float | None = Query(None),
     min_pat_cagr_5yr: float | None = Query(None),
     max_pe: float | None = Query(None),
+    min_opm: float | None = Query(None),
+    max_pb: float | None = Query(None),
+    min_dividend: float | None = Query(None),
+    min_icr: float | None = Query(None),
 ):
     """Screen companies using latest financial and valuation metrics."""
 
+    # ---------------------------------------------------------
+    # Parameter validation
+    # ---------------------------------------------------------
     if min_roe is not None and min_roe < -10000:
         raise HTTPException(
             status_code=400,
@@ -123,10 +134,7 @@ def screener(
             detail="max_de cannot be negative.",
         )
 
-    if min_fcf is not None and not isinstance(
-        min_fcf,
-        (int, float),
-    ):
+    if min_fcf is not None and not isinstance(min_fcf, (int, float)):
         raise HTTPException(
             status_code=400,
             detail="Invalid min_fcf.",
@@ -144,10 +152,44 @@ def screener(
             detail="Invalid min_pat_cagr_5yr.",
         )
 
+    if max_pe is not None and max_pe < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="max_pe cannot be negative.",
+        )
+
+    if min_opm is not None and min_opm < -100:
+        raise HTTPException(
+            status_code=400,
+            detail="min_opm cannot be below -100.",
+        )
+
+    if max_pb is not None and max_pb < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="max_pb cannot be negative.",
+        )
+
+    if min_dividend is not None and min_dividend < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="min_dividend cannot be negative.",
+        )
+
+    if min_icr is not None and min_icr < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="min_icr cannot be negative.",
+        )
+
     conn = get_connection()
 
     try:
-        companies = conn.execute("""
+        # -----------------------------------------------------
+        # Company master data
+        # -----------------------------------------------------
+        companies = conn.execute(
+            """
             SELECT
                 id,
                 company_name,
@@ -155,10 +197,14 @@ def screener(
                 roce_percentage
             FROM companies
             ORDER BY id
-            """).fetchall()
+            """
+        ).fetchall()
 
         results = []
 
+        # -----------------------------------------------------
+        # Evaluate each company
+        # -----------------------------------------------------
         for company in companies:
             company_id = company["id"]
 
@@ -205,65 +251,132 @@ def screener(
                 company_id,
             )
 
-            broad_sector = sector_row["broad_sector"] if sector_row else None
+            broad_sector = (
+                sector_row["broad_sector"]
+                if sector_row is not None
+                else None
+            )
+
+            sub_sector = (
+                sector_row["sub_sector"]
+                if sector_row is not None
+                else None
+            )
+
+            market_cap_category = (
+                sector_row["market_cap_category"]
+                if sector_row is not None
+                else None
+            )
 
             roe = ratios["return_on_equity_pct"]
             de = ratios["debt_to_equity"]
             fcf = ratios["free_cash_flow_cr"]
+            opm = ratios["operating_profit_margin_pct"]
+            icr = ratios["interest_coverage"]
 
             pe = market["pe_ratio"] if market else None
+            pb = market["pb_ratio"] if market else None
+            dividend = (
+                market["dividend_yield_pct"]
+                if market
+                else None
+            )
 
             # -------------------------------------------------
-            # Financials carve-out for D/E max
+            # Financial-sector D/E carve-out
+            #
+            # Keep this aligned with the existing dashboard
+            # integration test: financial companies are exempt
+            # from the max D/E filter.
             # -------------------------------------------------
-
             is_financials = (
                 broad_sector is not None
                 and broad_sector.strip().casefold() == "financials"
             )
 
-            if min_roe is not None and (roe is None or roe < min_roe):
+            # -------------------------------------------------
+            # Apply filters
+            # -------------------------------------------------
+            if min_roe is not None and (
+                roe is None or roe < min_roe
+            ):
                 continue
 
-            if max_de is not None and not is_financials and (de is None or de > max_de):
+            if max_de is not None and not is_financials and (
+                de is None or de > max_de
+            ):
                 continue
 
-            if min_fcf is not None and (fcf is None or fcf < min_fcf):
+            if min_fcf is not None and (
+                fcf is None or fcf < min_fcf
+            ):
                 continue
 
             if sector and (
                 broad_sector is None
-                or broad_sector.strip().casefold() != sector.strip().casefold()
+                or broad_sector.strip().casefold()
+                != sector.strip().casefold()
             ):
                 continue
 
             if min_rev_cagr_5yr is not None and (
-                revenue_cagr is None or revenue_cagr < min_rev_cagr_5yr
+                revenue_cagr is None
+                or revenue_cagr < min_rev_cagr_5yr
             ):
                 continue
 
             if min_pat_cagr_5yr is not None and (
-                pat_cagr is None or pat_cagr < min_pat_cagr_5yr
+                pat_cagr is None
+                or pat_cagr < min_pat_cagr_5yr
             ):
                 continue
 
-            if max_pe is not None and (pe is None or pe > max_pe):
+            if max_pe is not None and (
+                pe is None or pe > max_pe
+            ):
                 continue
 
+            if min_opm is not None and (
+                opm is None or opm < min_opm
+            ):
+                continue
+
+            if max_pb is not None and (
+                pb is None or pb > max_pb
+            ):
+                continue
+
+            if min_dividend is not None and (
+                dividend is None or dividend < min_dividend
+            ):
+                continue
+
+            if min_icr is not None and (
+                icr is None or icr < min_icr
+            ):
+                continue
+
+            # -------------------------------------------------
+            # Result row
+            # -------------------------------------------------
             results.append(
                 {
                     "ticker": company_id,
                     "company_name": company["company_name"],
                     "broad_sector": broad_sector,
-                    "market_cap_category": (
-                        sector_row["market_cap_category"] if sector_row else None
-                    ),
+                    "sub_sector": sub_sector,
+                    "market_cap_category": market_cap_category,
                     "roe": roe,
                     "debt_to_equity": de,
                     "free_cash_flow_cr": fcf,
                     "revenue_cagr_5yr": revenue_cagr,
                     "pat_cagr_5yr": pat_cagr,
+                    "operating_profit_margin_pct": opm,
                     "pe_ratio": pe,
+                    "pb_ratio": pb,
+                    "dividend_yield_pct": dividend,
+                    "interest_coverage": icr,
                 }
             )
 

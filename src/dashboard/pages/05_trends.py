@@ -150,7 +150,7 @@ fig.update_layout(
 
 st.plotly_chart(
     fig,
-    use_container_width=True,
+    width="stretch",
 )
 
 
@@ -181,7 +181,7 @@ yoy = yoy.sort_values("year", ascending=False)
 
 st.dataframe(
     yoy.round(2),
-    use_container_width=True,
+    width="stretch",
     hide_index=True,
 )
 
@@ -198,3 +198,4 @@ if year_count < 10:
     )
 else:
     st.caption("Displaying the latest 10 years of available historical data.")
+
